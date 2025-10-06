@@ -7,6 +7,7 @@ import { UserModule } from './modules/user/user.module';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { HttpAdapterHost } from '@nestjs/core';
+import { ItemModule } from './modules/item/item.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { HttpAdapterHost } from '@nestjs/core';
     }),
     CharacterModule,
     UserModule,
+    ItemModule,
   ],
   controllers: [AppController],
   providers: [AppService, HttpAdapterHost]

@@ -12,7 +12,10 @@ export class Item {
   description?: string;
 
   @Field({ nullable: true })
-  type?: string; // exemplo: consumível, chave, crafting
+  type?: string;
+
+  @Field(() => String, { nullable: true })
+  effects?: string;
 
   @Field(() => Date)
   createdAt: Date;

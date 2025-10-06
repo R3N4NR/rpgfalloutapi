@@ -46,6 +46,15 @@ input CreateCharacterInput {
   userId: String
 }
 
+input CreateItemInput {
+  description: String
+  effects: String
+  name: String!
+  type: ItemType!
+  value: Float
+  weight: Float
+}
+
 input CreateUserInput {
   name: String!
 }
@@ -58,18 +67,30 @@ scalar DateTime
 type Item {
   createdAt: DateTime!
   description: String
+  effects: String
   id: String!
   name: String!
   type: String
   updatedAt: DateTime!
 }
 
+enum ItemType {
+  Aid
+  Ammo
+  Consumable
+  Material
+  Quest
+}
+
 type Mutation {
   createCharacter(data: CreateCharacterInput!): Character!
+  createItem(data: CreateItemInput!): Item!
   createUser(data: CreateUserInput!): User!
   removeCharacter(id: String!): Character!
+  removeItem(id: String!): Item!
   removeUser(id: String!): User!
   updateCharacter(data: UpdateCharacterInput!, id: String!): Character!
+  updateItem(data: UpdateItemInput!): Item!
   updateUser(data: UpdateUserInput!, id: String!): User!
 }
 
@@ -84,6 +105,8 @@ type Perk {
 type Query {
   character(id: String!): Character!
   characters: [Character!]!
+  item(id: String!): Item!
+  items: [Item!]!
   user(id: String!): User!
   users: [User!]!
 }
@@ -101,6 +124,16 @@ input UpdateCharacterInput {
   perception: Int
   strength: Int
   userId: String
+}
+
+input UpdateItemInput {
+  description: String
+  effects: String
+  id: String!
+  name: String
+  type: ItemType
+  value: Float
+  weight: Float
 }
 
 input UpdateUserInput {

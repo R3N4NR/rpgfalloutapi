@@ -1,5 +1,6 @@
 import { InputType, Field } from '@nestjs/graphql';
 import { IsNotEmpty } from 'class-validator';
+import { ItemType } from '../enums/itemEnum';
 
 @InputType()
 export class CreateItemInput {
@@ -11,5 +12,14 @@ export class CreateItemInput {
     description?: string;
 
     @Field({ nullable: true })
-    type?: string;
+    value?: number;
+
+    @Field({ nullable: true })
+    weight?: number;
+
+    @Field(() => ItemType)
+    type: ItemType;
+
+    @Field(() => String, { nullable: true })
+    effects?: string;
 }
