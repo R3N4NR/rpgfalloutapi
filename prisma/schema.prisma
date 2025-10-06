@@ -3,15 +3,18 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite" 
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
+
 model User {
-    id             String       @id @default(uuid())
-    name           String       
-    createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id        String      @id @default(uuid())
+  name      String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  characters Character[]
 }
 model Character {
   id             String       @id @default(uuid())
@@ -45,6 +48,9 @@ model Character {
   quest          Quest[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+
+  user           User?         @relation(fields: [userId], references: [id])
+  userId         String?
 }
 
 model Perk {

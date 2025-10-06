@@ -56,4 +56,7 @@ export class Character {
 
   @Field(() => Date)
   updatedAt: Date;
+
+  @Field({ nullable: true })
+  userId?: string;
 }

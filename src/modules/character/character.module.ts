@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { CharacterService } from './character.service';
 import { CharacterResolver } from './character.resolver';
+import { PrismaModule } from '../../prisma/prisma.module';
 
 @Module({
-  providers: [CharacterService, CharacterResolver]
+  imports: [PrismaModule],
+  providers: [CharacterResolver, CharacterService],
 })
-export class CharacterModule {}
+export class CharacterModule { }

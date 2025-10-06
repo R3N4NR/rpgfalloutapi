@@ -7,6 +7,14 @@ export class CreateCharacterInput {
   @IsNotEmpty()
   name: string;
 
+  @Field()
+  @IsNotEmpty()
+  hitPoints: number;
+
+  @Field()
+  @IsNotEmpty()
+  level: number;
+
   @Field(() => Int)
   @Min(1)
   strength: number;
@@ -34,4 +42,8 @@ export class CreateCharacterInput {
   @Field(() => Int)
   @Min(1)
   luck: number;
+
+  @Field({ nullable: true })
+  userId?: string;
+  
 }
