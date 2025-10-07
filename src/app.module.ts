@@ -10,6 +10,7 @@ import { HttpAdapterHost } from '@nestjs/core';
 import { ItemModule } from './modules/item/item.module';
 import { WeaponModule } from './modules/weapon/weapon.module';
 import { ArmorModule } from './modules/armor/armor.module';
+import { PerkModule } from './modules/perk/perk.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ArmorModule } from './modules/armor/armor.module';
     ItemModule,
     WeaponModule,
     ArmorModule,
+    PerkModule,
   ],
   controllers: [AppController],
   providers: [AppService, HttpAdapterHost]

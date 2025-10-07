@@ -67,6 +67,13 @@ input CreateItemInput {
   weight: Float
 }
 
+input CreatePerkInput {
+  description: String!
+  effects: JSON
+  name: String!
+  requiredLevel: Int
+}
+
 input CreateUserInput {
   name: String!
 }
@@ -105,20 +112,28 @@ enum ItemType {
   Quest
 }
 
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
 type Mutation {
   createArmor(data: CreateArmorInput!): Armor!
   createCharacter(data: CreateCharacterInput!): Character!
   createItem(data: CreateItemInput!): Item!
+  createPerk(data: CreatePerkInput!): Perk!
   createUser(data: CreateUserInput!): User!
   createWeapon(data: CreateWeaponInput!): Weapon!
   removeArmor(id: Int!): Armor!
   removeCharacter(id: String!): Character!
   removeItem(id: String!): Item!
+  removePerk(id: String!): Perk!
   removeUser(id: String!): User!
   removeWeapon(id: Int!): Weapon!
   updateArmor(data: UpdateArmorInput!): Armor!
   updateCharacter(data: UpdateCharacterInput!, id: String!): Character!
   updateItem(data: UpdateItemInput!): Item!
+  updatePerk(data: UpdatePerkInput!, id: String!): Perk!
   updateUser(data: UpdateUserInput!, id: String!): User!
   updateWeapon(data: UpdateWeaponInput!): Weapon!
 }
@@ -126,8 +141,10 @@ type Mutation {
 type Perk {
   createdAt: DateTime!
   description: String!
+  effects: JSON
   id: String!
   name: String!
+  requiredLevel: Int
   updatedAt: DateTime!
 }
 
@@ -138,6 +155,8 @@ type Query {
   characters: [Character!]!
   item(id: String!): Item!
   items: [Item!]!
+  perk(id: String!): Perk!
+  perks: [Perk!]!
   user(id: String!): User!
   users: [User!]!
   weapon(id: Int!): Weapon!
@@ -177,6 +196,14 @@ input UpdateItemInput {
   type: ItemType
   value: Float
   weight: Float
+}
+
+input UpdatePerkInput {
+  description: String
+  effects: JSON
+  id: String!
+  name: String
+  requiredLevel: Int
 }
 
 input UpdateUserInput {
