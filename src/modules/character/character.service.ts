@@ -17,7 +17,7 @@ export class CharacterService {
                 weapons: true,
                 armors: true,
                 perks: true,
-                inventory: true,
+                inventory: { include: { item: true } },
             },
         });
     }
@@ -29,7 +29,7 @@ export class CharacterService {
                 weapons: true,
                 armors: true,
                 perks: true,
-                inventory: true,
+                inventory: { include: { item: true } }
             },
         });
     }

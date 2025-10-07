@@ -1,5 +1,6 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Armor } from 'src/modules/armor/entities/armor.entity';
+import { InventoryItem } from 'src/modules/inventory/entities/inventoryitem.entity';
 import { Item } from 'src/modules/item/entities/item.entity';
 import { Perk } from 'src/modules/perk/entities/perk.entity';
 import { Weapon } from 'src/modules/weapon/entities/weapon.entity';
@@ -48,8 +49,8 @@ export class Character {
   @Field(() => [Perk], { nullable: true })
   perks?: Perk[];
 
-  @Field(() => [Item], { nullable: true })
-  inventory?: Item[];
+  @Field(() => [InventoryItem], { nullable: true })
+  inventory?: InventoryItem[];
 
   @Field(() => Date)
   createdAt: Date;
