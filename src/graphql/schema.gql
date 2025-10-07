@@ -7,8 +7,11 @@ type Armor {
   defense: Int!
   id: String!
   name: String!
-  type: String
+  rarity: String
+  type: String!
   updatedAt: DateTime!
+  value: Int!
+  weight: Float
 }
 
 type Character {
@@ -30,6 +33,15 @@ type Character {
   updatedAt: DateTime!
   userId: String
   weapons: [Weapon!]
+}
+
+input CreateArmorInput {
+  defense: Int!
+  name: String!
+  rarity: String
+  type: String!
+  value: Int!
+  weight: Float
 }
 
 input CreateCharacterInput {
@@ -94,14 +106,17 @@ enum ItemType {
 }
 
 type Mutation {
+  createArmor(data: CreateArmorInput!): Armor!
   createCharacter(data: CreateCharacterInput!): Character!
   createItem(data: CreateItemInput!): Item!
   createUser(data: CreateUserInput!): User!
   createWeapon(data: CreateWeaponInput!): Weapon!
+  removeArmor(id: Int!): Armor!
   removeCharacter(id: String!): Character!
   removeItem(id: String!): Item!
   removeUser(id: String!): User!
   removeWeapon(id: Int!): Weapon!
+  updateArmor(data: UpdateArmorInput!): Armor!
   updateCharacter(data: UpdateCharacterInput!, id: String!): Character!
   updateItem(data: UpdateItemInput!): Item!
   updateUser(data: UpdateUserInput!, id: String!): User!
@@ -117,6 +132,8 @@ type Perk {
 }
 
 type Query {
+  armor(id: Int!): Armor!
+  armors: [Armor!]!
   character(id: String!): Character!
   characters: [Character!]!
   item(id: String!): Item!
@@ -125,6 +142,16 @@ type Query {
   users: [User!]!
   weapon(id: Int!): Weapon!
   weapons: [Weapon!]!
+}
+
+input UpdateArmorInput {
+  defense: Int
+  id: String!
+  name: String
+  rarity: String
+  type: String
+  value: Int
+  weight: Float
 }
 
 input UpdateCharacterInput {

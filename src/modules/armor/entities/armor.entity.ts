@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
 
 @ObjectType()
 export class Armor {
@@ -8,11 +8,20 @@ export class Armor {
   @Field()
   name: string;
 
+  @Field(() => String)
+  type: string;
+
   @Field(() => Int)
   defense: number;
 
+  @Field(() => Float, { nullable: true })
+  weight?: number;
+
+  @Field(() => Int)
+  value: number;
+
   @Field({ nullable: true })
-  type?: string; // leve, médio, pesado
+  rarity?: string;
 
   @Field(() => Date)
   createdAt: Date;

@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { HttpAdapterHost } from '@nestjs/core';
 import { ItemModule } from './modules/item/item.module';
 import { WeaponModule } from './modules/weapon/weapon.module';
+import { ArmorModule } from './modules/armor/armor.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { WeaponModule } from './modules/weapon/weapon.module';
     UserModule,
     ItemModule,
     WeaponModule,
+    ArmorModule,
   ],
   controllers: [AppController],
   providers: [AppService, HttpAdapterHost]
