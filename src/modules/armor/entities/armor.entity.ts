@@ -1,4 +1,6 @@
+// src/modules/armor/entities/armor.entity.ts
 import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
+import { ArmorSlot as PrismaArmorSlot } from '@prisma/client';
 
 @ObjectType()
 export class Armor {
@@ -28,4 +30,7 @@ export class Armor {
 
   @Field(() => Date)
   updatedAt: Date;
+
+  @Field(() => PrismaArmorSlot)
+  slot: PrismaArmorSlot; 
 }

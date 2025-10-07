@@ -10,4 +10,8 @@ export class EquipArmorInput {
   @Field()
   @IsNotEmpty()
   armorId: string;
+
+  @Field()
+  @IsNotEmpty()
+  slot: string;
 }

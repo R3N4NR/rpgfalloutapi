@@ -1,9 +1,8 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { Armor } from 'src/modules/armor/entities/armor.entity';
+import { CharacterArmor } from 'src/modules/armor/entities/character-armor.entity';
 import { InventoryItem } from 'src/modules/inventory/entities/inventoryitem.entity';
-import { Item } from 'src/modules/item/entities/item.entity';
 import { Perk } from 'src/modules/perk/entities/perk.entity';
-import { Weapon } from 'src/modules/weapon/entities/weapon.entity';
+import { CharacterWeapon } from './character-weapon.entity';
 
 @ObjectType()
 export class Character {
@@ -40,11 +39,12 @@ export class Character {
   @Field(() => Int)
   hitPoints: number;
 
-  @Field(() => [Weapon], { nullable: true })
-  weapons?: Weapon[];
+  @Field(() => [CharacterWeapon])
+  weapons: CharacterWeapon[];
 
-  @Field(() => [Armor], { nullable: true })
-  armors?: Armor[];
+
+  @Field(() => [CharacterArmor], { nullable: true })
+  armors?: CharacterArmor[];
 
   @Field(() => [Perk], { nullable: true })
   perks?: Perk[];

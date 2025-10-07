@@ -8,15 +8,31 @@ type Armor {
   id: String!
   name: String!
   rarity: String
+  slot: ArmorSlot!
   type: String!
   updatedAt: DateTime!
   value: Int!
   weight: Float
 }
 
+enum ArmorSlot {
+  Arms
+  Chest
+  Feet
+  Head
+  Legs
+}
+
+enum ArmorType {
+  Heavy
+  Light
+  Medium
+  PowerArmor
+}
+
 type Character {
   agility: Int!
-  armors: [Armor!]
+  armors: [CharacterArmor!]
   charisma: Int!
   createdAt: DateTime!
   endurance: Int!
@@ -32,14 +48,30 @@ type Character {
   strength: Int!
   updatedAt: DateTime!
   userId: String
-  weapons: [Weapon!]
+  weapons: [CharacterWeapon!]!
+}
+
+type CharacterArmor {
+  armor: Armor!
+  armorId: String!
+  characterId: String!
+  equipped: Boolean!
+  id: String!
+  slot: String!
+}
+
+type CharacterWeapon {
+  equipped: Boolean!
+  id: String!
+  weapon: Weapon!
 }
 
 input CreateArmorInput {
   defense: Int!
   name: String!
   rarity: String
-  type: String!
+  slot: ArmorSlot!
+  type: ArmorType!
   value: Int!
   weight: Float
 }
@@ -100,6 +132,12 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+input EquipArmorInput {
+  armorId: String!
+  characterId: String!
+  slot: String!
+}
+
 type InventoryItem {
   characterId: String!
   id: String!
@@ -140,6 +178,8 @@ type Mutation {
   createQuest(data: QuestCreateInput!): Quest!
   createUser(data: CreateUserInput!): User!
   createWeapon(data: CreateWeaponInput!): Weapon!
+  equipArmor(data: EquipArmorInput!): Character!
+  equipWeapon(characterId: String!, weaponId: String!): Character!
   removeArmor(id: Int!): Armor!
   removeCharacter(id: String!): Character!
   removeInventoryItem(id: String!): InventoryItem!
@@ -148,6 +188,9 @@ type Mutation {
   removeQuest(id: String!): Quest!
   removeUser(id: String!): User!
   removeWeapon(id: Int!): Weapon!
+  unequipAllArmor(characterId: String!): Character!
+  unequipArmorSlot(characterId: String!, slot: String!): Character!
+  unequipWeapon(characterId: String!, weaponId: String!): Character!
   updateArmor(data: UpdateArmorInput!): Armor!
   updateCharacter(data: UpdateCharacterInput!, id: String!): Character!
   updateInventoryItem(data: UpdateInventoryItemInput!): InventoryItem!
@@ -219,7 +262,8 @@ input UpdateArmorInput {
   id: String!
   name: String
   rarity: String
-  type: String
+  slot: ArmorSlot
+  type: ArmorType
   value: Int
   weight: Float
 }

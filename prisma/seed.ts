@@ -1,78 +1,125 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, WeaponType, ArmorType, ArmorSlot, ItemType, QuestStatus } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Iniciando seed do RPG...');
+  console.log('🌱 Iniciando seed...');
 
-  // 🏛 Facções
-  await prisma.faction.createMany({
-    data: [
-      { name: 'Irmandade de Aço', description: 'Tecnocratas que veneram a tecnologia pré-guerra.', alignment: 'Lawful Neutral' },
-      { name: 'Nova Califórnia Republic', description: 'Democracia militar expansionista.', alignment: 'Lawful Good' },
-      { name: 'Raiders', description: 'Gangues violentas que vivem do saque.', alignment: 'Chaotic Evil' },
-    ],
-  });
-
-  // 🧠 Skills
-  await prisma.skill.createMany({
-    data: [
-      { name: 'Small Guns', description: 'Precisão com armas de pequeno porte', baseStat: 'agility' },
-      { name: 'Energy Weapons', description: 'Uso de rifles e pistolas de energia', baseStat: 'perception' },
-      { name: 'Speech', description: 'Capacidade de persuasão e negociação', baseStat: 'charisma' },
-      { name: 'Lockpick', description: 'Abrir fechaduras e cofres', baseStat: 'perception' },
-      { name: 'Sneak', description: 'Habilidade de se mover furtivamente', baseStat: 'agility' },
-    ],
-  });
-
-  // 💥 Perks
-  await prisma.perk.createMany({
-    data: [
-      { name: 'Bloody Mess', description: 'Você causa +5% de dano e deixa um rastro sangrento.', requiredLevel: 6 },
-      { name: 'Toughness', description: '+10 de resistência a dano físico.', requiredLevel: 4 },
-      { name: 'Gun Nut', description: '+10% de precisão com armas de fogo.', requiredLevel: 3 },
-      { name: 'Educated', description: 'Ganha mais XP por ação completada.', requiredLevel: 2 },
-    ],
-  });
-
-  // 🔫 Armas
-  await prisma.weapon.createMany({
-    data: [
-      { name: 'Faca de Combate', type: 'Melee', damage: 12, range: 1, weight: 1.0, value: 25, rarity: 'common' },
-      { name: 'Pistola 10mm', type: 'Pistol', damage: 20, range: 15, weight: 2.0, value: 75, rarity: 'common', ammoType: '10mm' },
-      { name: 'Rifle de Assalto', type: 'Rifle', damage: 35, range: 40, weight: 5.5, value: 250, rarity: 'uncommon', ammoType: '5.56mm' },
-      { name: 'Rifle a Laser', type: 'Energy', damage: 45, range: 50, weight: 4.0, value: 400, rarity: 'rare', ammoType: 'microfusion cell' },
-      { name: 'Lança-Mísseis', type: 'Explosive', damage: 100, range: 60, weight: 10.0, value: 1000, rarity: 'legendary', ammoType: 'missile' },
-    ],
-  });
-
-  // 🪖 Armaduras
-  await prisma.armor.createMany({
-    data: [
-      { name: 'Roupa de Couro', type: 'Light', defense: 10, weight: 3.0, value: 50, rarity: 'common' },
-      { name: 'Armadura de Combate', type: 'Medium', defense: 25, weight: 8.0, value: 200, rarity: 'uncommon' },
-      { name: 'Power Armor T-45d', type: 'PowerArmor', defense: 50, weight: 20.0, value: 1000, rarity: 'legendary' },
-    ],
-  });
-
-  // 🧪 Itens
-  await prisma.item.createMany({
-    data: [
-      { name: 'Stimpak', type: 'Consumable', description: 'Recupera 30 HP.', value: 50, effects: { hp: +30 } },
-      { name: 'RadAway', type: 'Aid', description: 'Remove 30 de radiação.', value: 60, effects: { radiation: -30 } },
-      { name: 'Água Purificada', type: 'Consumable', description: 'Recupera 15 HP.', value: 20, effects: { hp: +15 } },
-      { name: 'Caps', type: 'Material', description: 'Moeda padrão das Wastelands.', value: 1 },
-      { name: 'Munição 10mm', type: 'Ammo', description: 'Cartuchos para pistolas 10mm.', value: 5 },
-    ],
-  });
-
-  // 👤 Personagem inicial
-  const faction = await prisma.faction.findFirst({ where: { name: 'Nova Califórnia Republic' } });
-
-  const character = await prisma.character.create({
+  // 🧑 Usuário
+  const user = await prisma.user.create({
     data: {
       name: 'Vault Dweller',
-      level: 1,
-      experience: 0,
+    },
+  });
+
+  // ⚔️ Armas
+  const weapons = await prisma.weapon.createMany({
+    data: [
+      { name: '10mm Pistol', type: WeaponType.Pistol, damage: 25, value: 100, rarity: 'Common' },
+      { name: 'Laser Rifle', type: WeaponType.Energy, damage: 45, value: 500, rarity: 'Rare' },
+      { name: 'Baseball Bat', type: WeaponType.Melee, damage: 15, value: 30, rarity: 'Common' },
+    ],
+  });
+
+  // 🛡️ Armaduras
+  const armors = await prisma.armor.createMany({
+    data: [
+      { name: 'Leather Armor', type: ArmorType.Light, defense: 15, value: 150, slot: ArmorSlot.Chest },
+      { name: 'Combat Helmet', type: ArmorType.Medium, defense: 10, value: 120, slot: ArmorSlot.Head },
+      { name: 'Metal Boots', type: ArmorType.Heavy, defense: 8, value: 90, slot: ArmorSlot.Feet },
+    ],
+  });
+
+  // 🧩 Perks
+  const perks = await prisma.perk.createMany({
+    data: [
+      { name: 'Strong Back', description: 'Carry more weight.', requiredLevel: 3 },
+      { name: 'Bloody Mess', description: 'More gore, more damage.', requiredLevel: 6 },
+    ],
+  });
+
+  // 🎒 Itens
+  const items = await prisma.item.createMany({
+    data: [
+      { name: 'Stimpak', type: ItemType.Consumable, description: 'Heals 30 HP.', value: 50 },
+      { name: 'RadAway', type: ItemType.Aid, description: 'Reduces radiation.', value: 80 },
+      { name: 'Bottlecap', type: ItemType.Material, value: 1 },
+    ],
+  });
+
+  // 🛡️ Fação
+  const faction = await prisma.faction.create({
+    data: {
+      name: 'Brotherhood of Steel',
+      description: 'Technological preservation faction.',
+      alignment: 'Lawful Neutral',
+      reputation: 10,
+    },
+  });
+
+  // 🎮 Personagens
+  const character1 = await prisma.character.create({
+    data: {
+      name: 'Aiden Steel',
+      level: 5,
+      experience: 450,
+      strength: 7,
+      perception: 6,
+      endurance: 5,
+      charisma: 4,
+      intelligence: 6,
+      agility: 5,
+      luck: 5,
+      userId: user.id,
+      factionId: faction.id,
+      weapons: {
+        create: [
+          {
+            weapon: {
+              connect: { name: '10mm Pistol' },
+            },
+            equipped: true,
+          },
+        ],
+      },
+      armors: {
+        create: [
+          {
+            armor: {
+              connect: { name: 'Leather Armor' },
+            },
+            equipped: true,
+            slot: ArmorSlot.Chest,
+          },
+          {
+            armor: {
+              connect: { name: 'Combat Helmet' },
+            },
+            equipped: true,
+            slot: ArmorSlot.Head,
+          },
+        ],
+      },
+      inventory: {
+        create: [
+          {
+            item: { connect: { name: 'Stimpak' } },
+            quantity: 3,
+          },
+          {
+            item: { connect: { name: 'Bottlecap' } },
+            quantity: 100,
+          },
+        ],
+      },
+    },
+  });
+
+  const character2 = await prisma.character.create({
+    data: {
+      name: 'Nora Vault',
+      level: 2,
+      experience: 120,
       strength: 5,
       perception: 5,
       endurance: 5,
@@ -80,81 +127,57 @@ async function main() {
       intelligence: 5,
       agility: 5,
       luck: 5,
-      hitPoints: 100,
-      actionPoints: 50,
-      radiation: 0,
-      caps: 50,
-      factionId: faction?.id,
+      userId: user.id,
+      weapons: {
+        create: [
+          {
+            weapon: {
+              connect: { name: 'Baseball Bat' },
+            },
+            equipped: true,
+          },
+        ],
+      },
+      armors: {
+        create: [
+          {
+            armor: { connect: { name: 'Metal Boots' } },
+            equipped: true,
+            slot: ArmorSlot.Feet,
+          },
+        ],
+      },
     },
   });
-  console.log('✅ Personagem inicial criado:', character.name);
 
-  // 🧩 Equipamentos e inventário inicial
-  const pistol = await prisma.weapon.findFirst({ where: { name: 'Pistola 10mm' } });
-  const armor = await prisma.armor.findFirst({ where: { name: 'Roupa de Couro' } });
-  const stimpak = await prisma.item.findFirst({ where: { name: 'Stimpak' } });
-
-  if (pistol && armor && stimpak) {
-    await prisma.characterWeapon.create({
-      data: {
-        characterId: character.id,
-        weaponId: pistol.id,
-        equipped: true,
-      },
-    });
-    await prisma.characterArmor.create({
-      data: {
-        characterId: character.id,
-        armorId: armor.id,
-        equipped: true,
-      },
-    });
-    await prisma.inventoryItem.create({
-      data: {
-        characterId: character.id,
-        itemId: stimpak.id,
-        quantity: 3,
-      },
-    });
-  }
-
-  // 🗺️ Missões (Quests)
+  // 🎯 Missões
   await prisma.quest.createMany({
     data: [
       {
-        title: 'Reparar o Gerador do Refúgio',
-        description: 'O gerador principal falhou. Encontre peças e restaure a energia.',
-        rewardCaps: 100,
-        experience: 300,
-        status: 'Pending',
-        characterId: character.id,
+        title: 'Clear the Super Mutant Camp',
+        description: 'Eliminate all super mutants in the area.',
+        status: QuestStatus.Pending,
+        rewardCaps: 300,
+        experience: 500,
+        characterId: character1.id,
       },
       {
-        title: 'Caçar os Raiders da Estrada 95',
-        description: 'Grupos de saqueadores estão atacando caravanas próximas. Elimine a ameaça.',
+        title: 'Find the Lost Holotape',
+        description: 'Recover the lost Brotherhood holotape.',
+        status: QuestStatus.InProgress,
         rewardCaps: 200,
-        experience: 600,
-        status: 'Pending',
-        characterId: character.id,
-      },
-      {
-        title: 'Ajudar o Fazendeiro de Junktown',
-        description: 'Você ajudou um fazendeiro a se livrar de radscorpions.',
-        rewardCaps: 50,
-        experience: 150,
-        status: 'Pending',
-        characterId: character.id,
+        experience: 250,
+        characterId: character2.id,
       },
     ],
   });
 
-  console.log('✅ Missões criadas e vinculadas ao personagem.');
-  console.log('🌎 Seed completo!');
+  console.log('✅ Seed finalizado com sucesso!');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Erro ao rodar seed:', e);
     process.exit(1);
   })
   .finally(async () => {
