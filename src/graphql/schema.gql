@@ -59,6 +59,17 @@ input CreateUserInput {
   name: String!
 }
 
+input CreateWeaponInput {
+  ammoType: String
+  damage: Int!
+  name: String!
+  range: Int
+  rarity: String
+  type: String!
+  value: Int!
+  weight: Float
+}
+
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
@@ -86,12 +97,15 @@ type Mutation {
   createCharacter(data: CreateCharacterInput!): Character!
   createItem(data: CreateItemInput!): Item!
   createUser(data: CreateUserInput!): User!
+  createWeapon(data: CreateWeaponInput!): Weapon!
   removeCharacter(id: String!): Character!
   removeItem(id: String!): Item!
   removeUser(id: String!): User!
+  removeWeapon(id: Int!): Weapon!
   updateCharacter(data: UpdateCharacterInput!, id: String!): Character!
   updateItem(data: UpdateItemInput!): Item!
   updateUser(data: UpdateUserInput!, id: String!): User!
+  updateWeapon(data: UpdateWeaponInput!): Weapon!
 }
 
 type Perk {
@@ -109,6 +123,8 @@ type Query {
   items: [Item!]!
   user(id: String!): User!
   users: [User!]!
+  weapon(id: Int!): Weapon!
+  weapons: [Weapon!]!
 }
 
 input UpdateCharacterInput {
@@ -140,6 +156,18 @@ input UpdateUserInput {
   name: String
 }
 
+input UpdateWeaponInput {
+  ammoType: String
+  damage: Int
+  id: String!
+  name: String
+  range: Int
+  rarity: String
+  type: String
+  value: Int
+  weight: Float
+}
+
 type User {
   createdAt: DateTime!
   id: String!
@@ -148,10 +176,15 @@ type User {
 }
 
 type Weapon {
+  ammoType: String
   createdAt: DateTime!
   damage: Int!
   id: String!
   name: String!
-  type: String
+  range: Int
+  rarity: String
+  type: String!
   updatedAt: DateTime!
+  value: Int!
+  weight: Float
 }
