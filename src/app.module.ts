@@ -11,6 +11,7 @@ import { ItemModule } from './modules/item/item.module';
 import { WeaponModule } from './modules/weapon/weapon.module';
 import { ArmorModule } from './modules/armor/armor.module';
 import { PerkModule } from './modules/perk/perk.module';
+import { QuestModule } from './modules/quest/quest.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PerkModule } from './modules/perk/perk.module';
     WeaponModule,
     ArmorModule,
     PerkModule,
+    QuestModule,
   ],
   controllers: [AppController],
   providers: [AppService, HttpAdapterHost]

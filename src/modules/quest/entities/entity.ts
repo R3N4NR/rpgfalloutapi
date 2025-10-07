@@ -1,6 +1,7 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Character } from '../../character/entities/character.entity';
 import { QuestStatus } from '../enums/questEnum';
+import { IsOptional } from 'class-validator';
 
 @ObjectType()
 export class Quest {
@@ -16,8 +17,15 @@ export class Quest {
   @Field(() => QuestStatus)
   status: QuestStatus;
 
-  @Field(() => [Character], { nullable: true })
-  assignedCharacters?: Character[];
+  @Field(() => Int)
+  rewardCaps: number;
+
+  @Field(() => Int)
+  experience: number;
+
+  @Field()
+  @IsOptional()
+  characterId?: string;
 
   @Field(() => Date)
   createdAt: Date;

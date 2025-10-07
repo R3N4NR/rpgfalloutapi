@@ -1,8 +1,9 @@
-import { InputType, Field } from '@nestjs/graphql';
-import { IsNotEmpty } from 'class-validator';
+import { InputType, Field, Int } from '@nestjs/graphql';
+import { IsNotEmpty, IsOptional, Min } from 'class-validator';
+import { QuestStatus } from '../enums/questEnum';
 
 @InputType()
-export class CreateQuestInput {
+export class QuestCreateInput {
     @Field()
     @IsNotEmpty()
     title: string;
@@ -10,4 +11,20 @@ export class CreateQuestInput {
     @Field()
     @IsNotEmpty()
     description: string;
+
+    @Field(() => QuestStatus, { nullable: true })
+    @IsOptional()
+    status?: QuestStatus;
+
+    @Field(() => Int)
+    @Min(0)
+    rewardCaps: number;
+
+    @Field(() => Int)
+    @Min(0)
+    experience: number;
+
+    @Field({ nullable: true })
+    @IsOptional()
+    characterId?: string;
 }

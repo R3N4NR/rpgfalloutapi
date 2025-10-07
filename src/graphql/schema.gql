@@ -122,18 +122,21 @@ type Mutation {
   createCharacter(data: CreateCharacterInput!): Character!
   createItem(data: CreateItemInput!): Item!
   createPerk(data: CreatePerkInput!): Perk!
+  createQuest(data: QuestCreateInput!): Quest!
   createUser(data: CreateUserInput!): User!
   createWeapon(data: CreateWeaponInput!): Weapon!
   removeArmor(id: Int!): Armor!
   removeCharacter(id: String!): Character!
   removeItem(id: String!): Item!
   removePerk(id: String!): Perk!
+  removeQuest(id: String!): Quest!
   removeUser(id: String!): User!
   removeWeapon(id: Int!): Weapon!
   updateArmor(data: UpdateArmorInput!): Armor!
   updateCharacter(data: UpdateCharacterInput!, id: String!): Character!
   updateItem(data: UpdateItemInput!): Item!
   updatePerk(data: UpdatePerkInput!, id: String!): Perk!
+  updateQuest(data: UpdateQuestInput!, id: String!): Quest!
   updateUser(data: UpdateUserInput!, id: String!): User!
   updateWeapon(data: UpdateWeaponInput!): Weapon!
 }
@@ -157,10 +160,39 @@ type Query {
   items: [Item!]!
   perk(id: String!): Perk!
   perks: [Perk!]!
+  quest(id: String!): Quest!
+  quests: [Quest!]!
   user(id: String!): User!
   users: [User!]!
   weapon(id: Int!): Weapon!
   weapons: [Weapon!]!
+}
+
+type Quest {
+  characterId: String!
+  createdAt: DateTime!
+  description: String!
+  experience: Int!
+  id: String!
+  rewardCaps: Int!
+  status: QuestStatus!
+  title: String!
+  updatedAt: DateTime!
+}
+
+input QuestCreateInput {
+  characterId: String
+  description: String!
+  experience: Int!
+  rewardCaps: Int!
+  status: QuestStatus
+  title: String!
+}
+
+enum QuestStatus {
+  COMPLETED
+  IN_PROGRESS
+  PENDING
 }
 
 input UpdateArmorInput {
@@ -204,6 +236,16 @@ input UpdatePerkInput {
   id: String!
   name: String
   requiredLevel: Int
+}
+
+input UpdateQuestInput {
+  characterId: String
+  description: String
+  experience: Int
+  id: String!
+  rewardCaps: Int
+  status: QuestStatus
+  title: String
 }
 
 input UpdateUserInput {
