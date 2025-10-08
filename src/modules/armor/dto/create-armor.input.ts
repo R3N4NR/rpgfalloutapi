@@ -1,11 +1,9 @@
 // src/modules/armor/dto/create-armor.input.ts
 import { InputType, Field, Int, Float, registerEnumType } from '@nestjs/graphql';
 import { IsNotEmpty, Min, IsOptional } from 'class-validator';
-import { ArmorType } from '../enums/armorEnum'
-import { ArmorRarity, ArmorSlot as PrismaArmorSlot } from '@prisma/client';
+import { ArmorRarity, ArmorType } from '../enums/armorEnum';
+import { ArmorSlot } from '../enums/armorEnum';
 
-// registra o enum do Prisma para o GraphQL
-registerEnumType(PrismaArmorSlot, { name: 'ArmorSlot' });
 
 @InputType()
 export class CreateArmorInput {
@@ -17,9 +15,9 @@ export class CreateArmorInput {
   @IsNotEmpty()
   type: ArmorType;
 
-  @Field(() => PrismaArmorSlot)
+  @Field(() => ArmorSlot)
   @IsNotEmpty()
-  slot: PrismaArmorSlot;
+  slot: ArmorSlot;
 
   @Field(() => Int)
   @Min(1)
@@ -33,7 +31,7 @@ export class CreateArmorInput {
   @Min(0)
   value: number;
 
-  @Field({ nullable: true })
-  @IsOptional()
-  rarity: ArmorRarity
+  @Field(() => ArmorRarity, { nullable: true })
+  rarity: ArmorRarity;
+
 }

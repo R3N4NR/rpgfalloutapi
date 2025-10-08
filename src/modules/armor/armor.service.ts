@@ -2,8 +2,8 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateArmorInput } from './dto/create-armor.input';
 import { UpdateArmorInput } from './dto/update-armor.input';
-import { Armor, ArmorSlot } from '@prisma/client';
-
+import { Armor } from '@prisma/client';
+import { ArmorSlot } from './enums/armorEnum';
 @Injectable()
 export class ArmorService {
   constructor(private readonly prisma: PrismaService) {}

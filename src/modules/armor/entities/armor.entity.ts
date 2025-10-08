@@ -1,6 +1,8 @@
 // src/modules/armor/entities/armor.entity.ts
 import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
-import { ArmorRarity, ArmorSlot as PrismaArmorSlot } from '@prisma/client';
+import { ArmorRarity, ArmorType } from '../enums/armorEnum';
+import { ArmorSlot } from '../enums/armorEnum';
+
 
 @ObjectType()
 export class Armor {
@@ -10,8 +12,8 @@ export class Armor {
   @Field()
   name: string;
 
-  @Field(() => String)
-  type: string;
+  @Field(() => ArmorType)
+  type: ArmorType;
 
   @Field(() => Int)
   defense: number;
@@ -22,8 +24,9 @@ export class Armor {
   @Field(() => Int)
   value: number;
 
-  @Field({ nullable: true })
+  @Field(() => ArmorRarity)
   rarity: ArmorRarity;
+
 
   @Field(() => Date)
   createdAt: Date;
@@ -31,6 +34,6 @@ export class Armor {
   @Field(() => Date)
   updatedAt: Date;
 
-  @Field(() => PrismaArmorSlot)
-  slot: PrismaArmorSlot; 
+  @Field(() => ArmorSlot)
+  slot: ArmorSlot;
 }

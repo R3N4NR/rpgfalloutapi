@@ -1,6 +1,6 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 import { Armor } from './armor.entity';
-import { ArmorSlot } from '../enums/armor-slot.enum';
+import { ArmorSlot } from '../enums/armorEnum';
 
 @ObjectType()
 export class CharacterArmor {
@@ -13,7 +13,7 @@ export class CharacterArmor {
   @Field()
   armorId: string;
 
-  @Field()
+  @Field(() => ArmorSlot)
   slot: ArmorSlot;
 
   @Field()
