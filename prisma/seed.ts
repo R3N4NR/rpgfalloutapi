@@ -1,4 +1,13 @@
-import { PrismaClient, WeaponType, ArmorType, ArmorSlot, ItemType, QuestStatus } from '@prisma/client';
+import {
+  PrismaClient,
+  WeaponType,
+  ArmorType,
+  ArmorSlot,
+  ItemType,
+  QuestStatus,
+  EnemyType,
+  ResistanceType,
+} from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -13,7 +22,7 @@ async function main() {
   });
 
   // ⚔️ Armas
-  const weapons = await prisma.weapon.createMany({
+  await prisma.weapon.createMany({
     data: [
       { name: '10mm Pistol', type: WeaponType.Pistol, damage: 25, value: 100, rarity: 'Common' },
       { name: 'Laser Rifle', type: WeaponType.Energy, damage: 45, value: 500, rarity: 'Rare' },
@@ -22,16 +31,16 @@ async function main() {
   });
 
   // 🛡️ Armaduras
-  const armors = await prisma.armor.createMany({
+  await prisma.armor.createMany({
     data: [
       { name: 'Leather Armor', type: ArmorType.Light, defense: 15, value: 150, slot: ArmorSlot.Chest, rarity: 'Common', weight: 12.5 },
-      { name: 'Combat Helmet', type: ArmorType.Medium, defense: 10, value: 120, slot: ArmorSlot.Head, rarity: 'Common', weight: 12.5 },
-      { name: 'Metal Boots', type: ArmorType.Heavy, defense: 8, value: 90, slot: ArmorSlot.Feet, rarity: 'Common', weight: 12.5 },
+      { name: 'Combat Helmet', type: ArmorType.Medium, defense: 10, value: 120, slot: ArmorSlot.Head, rarity: 'Common', weight: 8.5 },
+      { name: 'Metal Boots', type: ArmorType.Heavy, defense: 8, value: 90, slot: ArmorSlot.Feet, rarity: 'Common', weight: 10.0 },
     ],
   });
 
   // 🧩 Perks
-  const perks = await prisma.perk.createMany({
+  await prisma.perk.createMany({
     data: [
       { name: 'Strong Back', description: 'Carry more weight.', requiredLevel: 3 },
       { name: 'Bloody Mess', description: 'More gore, more damage.', requiredLevel: 6 },
@@ -39,7 +48,7 @@ async function main() {
   });
 
   // 🎒 Itens
-  const items = await prisma.item.createMany({
+  await prisma.item.createMany({
     data: [
       { name: 'Stimpak', type: ItemType.Consumable, description: 'Heals 30 HP.', value: 50 },
       { name: 'RadAway', type: ItemType.Aid, description: 'Reduces radiation.', value: 80 },
@@ -54,6 +63,61 @@ async function main() {
       description: 'Technological preservation faction.',
       alignment: 'Lawful Neutral',
       reputation: 10,
+    },
+  });
+
+  // 🌍 Localização
+  const location = await prisma.location.create({
+    data: {
+      name: 'Concord Ruins',
+      spawnType: EnemyType.SuperMutant,
+      discovered: true,
+    },
+  });
+
+  // 🧑‍💬 NPCs
+  await prisma.npc.createMany({
+    data: [
+      {
+        name: 'Preston Garvey',
+        dialogue: JSON.stringify({
+          intro: "Another settlement needs your help!",
+          farewell: "Stay safe out there, General.",
+        }),
+        locationId: location.id,
+      },
+      {
+        name: 'Sturges',
+        dialogue: JSON.stringify({
+          intro: "We could really use your help fixing this place up.",
+        }),
+        locationId: location.id,
+      },
+    ],
+  });
+
+  // 👾 Inimigos
+  const enemy = await prisma.enemy.create({
+    data: {
+      name: 'Super Mutant Brute',
+      level: 6,
+      damage: 25,
+      hitPoints: 120,
+      resistances: ResistanceType.Physical,
+      type: EnemyType.SuperMutant,
+      hostile: true,
+      drops: {
+        create: [
+          {
+            item: { connect: { name: 'Bottlecap' } },
+            dropRate: 0.75,
+          },
+          {
+            item: { connect: { name: 'Stimpak' } },
+            dropRate: 0.3,
+          },
+        ],
+      },
     },
   });
 
@@ -72,12 +136,11 @@ async function main() {
       luck: 5,
       userId: user.id,
       factionId: faction.id,
+      locationId: location.id,
       weapons: {
         create: [
           {
-            weapon: {
-              connect: { name: '10mm Pistol' },
-            },
+            weapon: { connect: { name: '10mm Pistol' } },
             equipped: true,
           },
         ],
@@ -85,16 +148,12 @@ async function main() {
       armors: {
         create: [
           {
-            armor: {
-              connect: { name: 'Leather Armor' },
-            },
+            armor: { connect: { name: 'Leather Armor' } },
             equipped: true,
             slot: ArmorSlot.Chest,
           },
           {
-            armor: {
-              connect: { name: 'Combat Helmet' },
-            },
+            armor: { connect: { name: 'Combat Helmet' } },
             equipped: true,
             slot: ArmorSlot.Head,
           },
@@ -102,14 +161,8 @@ async function main() {
       },
       inventory: {
         create: [
-          {
-            item: { connect: { name: 'Stimpak' } },
-            quantity: 3,
-          },
-          {
-            item: { connect: { name: 'Bottlecap' } },
-            quantity: 100,
-          },
+          { item: { connect: { name: 'Stimpak' } }, quantity: 3 },
+          { item: { connect: { name: 'Bottlecap' } }, quantity: 100 },
         ],
       },
     },
@@ -131,9 +184,7 @@ async function main() {
       weapons: {
         create: [
           {
-            weapon: {
-              connect: { name: 'Baseball Bat' },
-            },
+            weapon: { connect: { name: 'Baseball Bat' } },
             equipped: true,
           },
         ],
@@ -160,6 +211,7 @@ async function main() {
         rewardCaps: 300,
         experience: 500,
         characterId: character1.id,
+        locationId: location.id,
       },
       {
         title: 'Find the Lost Holotape',
@@ -168,6 +220,7 @@ async function main() {
         rewardCaps: 200,
         experience: 250,
         characterId: character2.id,
+        locationId: location.id,
       },
     ],
   });
