@@ -7,14 +7,24 @@ type Armor {
   defense: Int!
   id: String!
   name: String!
-  rarity: String
+  rarity: ArmorRarity!
   slot: ArmorSlot!
-  type: String!
+  type: ArmorType!
   updatedAt: DateTime!
   value: Int!
   weight: Float
 }
 
+"""Raridade da armadura"""
+enum ArmorRarity {
+  Common
+  Epic
+  Legendary
+  Rare
+  Uncommon
+}
+
+"""Slot da armadura"""
 enum ArmorSlot {
   Arms
   Chest
@@ -23,6 +33,7 @@ enum ArmorSlot {
   Legs
 }
 
+"""Tipo da armadura"""
 enum ArmorType {
   Heavy
   Light
@@ -57,7 +68,16 @@ type CharacterArmor {
   characterId: String!
   equipped: Boolean!
   id: String!
-  slot: String!
+  slot: ArmorSlot!
+}
+
+type CharacterQuest {
+  acceptedAt: DateTime!
+  character: Character!
+  completedAt: DateTime
+  id: ID!
+  quest: Quest!
+  status: QuestStatus!
 }
 
 type CharacterWeapon {
@@ -69,7 +89,7 @@ type CharacterWeapon {
 input CreateArmorInput {
   defense: Int!
   name: String!
-  rarity: String
+  rarity: ArmorRarity
   slot: ArmorSlot!
   type: ArmorType!
   value: Int!
@@ -135,7 +155,7 @@ scalar DateTime
 input EquipArmorInput {
   armorId: String!
   characterId: String!
-  slot: String!
+  slot: ArmorSlot!
 }
 
 type InventoryItem {
@@ -170,6 +190,8 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON
 
 type Mutation {
+  acceptQuest(characterId: String!, questId: String!): CharacterQuest!
+  completeQuest(characterId: String!, questId: String!): CharacterQuest!
   createArmor(data: CreateArmorInput!): Armor!
   createCharacter(data: CreateCharacterInput!): Character!
   createInventoryItem(data: CreateInventoryItemInput!): InventoryItem!
@@ -180,23 +202,22 @@ type Mutation {
   createWeapon(data: CreateWeaponInput!): Weapon!
   equipArmor(data: EquipArmorInput!): Character!
   equipWeapon(characterId: String!, weaponId: String!): Character!
+  failQuest(characterId: String!, questId: String!): CharacterQuest!
   removeArmor(id: String!): Armor!
   removeCharacter(id: String!): Character!
   removeInventoryItem(id: String!): InventoryItem!
   removeItem(id: String!): Item!
   removePerk(id: String!): Perk!
-  removeQuest(id: String!): Quest!
   removeUser(id: String!): User!
   removeWeapon(id: String!): Weapon!
   unequipAllArmor(characterId: String!): Character!
-  unequipArmorSlot(characterId: String!, slot: String!): Character!
+  unequipArmorSlot(characterId: String!, unequipArmorSlot: ArmorSlot!): Character!
   unequipWeapon(characterId: String!, weaponId: String!): Character!
   updateArmor(data: UpdateArmorInput!): Armor!
   updateCharacter(data: UpdateCharacterInput!, id: String!): Character!
   updateInventoryItem(data: UpdateInventoryItemInput!, id: String!): InventoryItem!
   updateItem(data: UpdateItemInput!, id: String!): Item!
   updatePerk(data: UpdatePerkInput!, id: String!): Perk!
-  updateQuest(data: UpdateQuestInput!): Quest!
   updateUser(data: UpdateUserInput!, id: String!): User!
   updateWeapon(data: UpdateWeaponInput!, id: String!): Weapon!
 }
@@ -224,8 +245,8 @@ type Query {
   perks: [Perk!]!
   quest(id: String!): Quest!
   quests: [Quest!]!
-  questsByCharacter(characterId: String!): [Quest!]!
-  questsByStatus(status: QuestStatus!): [Quest!]!
+  questsByCharacter(characterId: String!): [CharacterQuest!]!
+  questsByStatus(status: QuestStatus!): [CharacterQuest!]!
   user(id: String!): User!
   users: [User!]!
   weapon(id: String!): Weapon!
@@ -233,10 +254,13 @@ type Query {
 }
 
 type Quest {
+  characters: [CharacterQuest]!
   createdAt: DateTime!
   description: String!
   experience: Float!
   id: ID!
+  locationId: String
+  npcId: String
   rewardCaps: Float!
   status: QuestStatus!
   title: String!
@@ -246,8 +270,9 @@ type Quest {
 input QuestCreateInput {
   description: String!
   experience: Int!
+  locationId: String
+  npcId: String
   rewardCaps: Int!
-  status: QuestStatus
   title: String!
 }
 
@@ -262,7 +287,7 @@ input UpdateArmorInput {
   defense: Int
   id: String!
   name: String
-  rarity: String
+  rarity: ArmorRarity
   slot: ArmorSlot
   type: ArmorType
   value: Int
@@ -307,15 +332,6 @@ input UpdatePerkInput {
   id: String!
   name: String
   requiredLevel: Int
-}
-
-input UpdateQuestInput {
-  description: String
-  experience: Int
-  id: String!
-  rewardCaps: Int
-  status: QuestStatus
-  title: String
 }
 
 input UpdateUserInput {
