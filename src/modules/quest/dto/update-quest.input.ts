@@ -1,12 +1,10 @@
-import { InputType, Field, PartialType } from '@nestjs/graphql';
+import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
 import { QuestCreateInput } from './create-quest.input';
-import { QuestStatus } from '../enums/questEnum';
+import { IsNotEmpty } from 'class-validator';
 
 @InputType()
 export class UpdateQuestInput extends PartialType(QuestCreateInput) {
-    @Field()
-    id: string;
-
-    @Field(() => QuestStatus, { nullable: true })
-    status?: QuestStatus;
+  @Field()
+  @IsNotEmpty()
+  id: string;
 }

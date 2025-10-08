@@ -1,74 +1,82 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-  InternalServerErrorException,
-} from '@nestjs/common';
-import { Prisma} from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { QuestCreateInput } from './dto/create-quest.input';
-import { UpdateQuestInput } from './dto/update-quest.input';
-import { QuestStatus } from './enums/questEnum';
-import { Quest } from './entities/quest.entity';
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { QuestStatus } from "./enums/questEnum";
+import { UpdateQuestInput } from "./dto/update-quest.input";
+import { QuestCreateInput } from "./dto/create-quest.input";
+import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
 export class QuestService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: QuestCreateInput): Promise<Quest> {
-    if (!data.title?.trim()) throw new BadRequestException('Quest title is required');
-    if (!data.description?.trim()) throw new BadRequestException('Quest description is required');
-
-    try {
-      return await this.prisma.quest.create({ data });
-    } catch (error) {
-      throw new InternalServerErrorException('Error creating quest');
-    }
+  // Criar quest
+  async create(data: QuestCreateInput) {
+    return this.prisma.quest.create({ data });
   }
 
-  async findAll(): Promise<Quest[]> {
-    return this.prisma.quest.findMany({
-      include: {  character: true, location: true},
-    });
+  async findAll() {
+    return this.prisma.quest.findMany({ include: { characters: true } });
   }
 
-  async findOne(id: string): Promise<Quest> {
+  async findOne(id: string) {
     const quest = await this.prisma.quest.findUnique({
       where: { id },
-      include: { character: true, location: true },
+      include: { characters: true },
     });
-
-    if (!quest) throw new NotFoundException(`Quest with ID ${id} not found`);
+    if (!quest) throw new NotFoundException('Quest not found');
     return quest;
   }
 
-  async update(id: string, data: UpdateQuestInput): Promise<Quest> {
-    try {
-      return await this.prisma.quest.update({ where: { id }, data });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')
-        throw new NotFoundException(`Quest with ID ${id} not found`);
-      throw new InternalServerErrorException('Error updating quest');
-    }
+  async update(id: string, data: UpdateQuestInput) {
+    return this.prisma.quest.update({ where: { id }, data });
   }
 
-  async remove(id: string): Promise<Quest> {
-    try {
-      return await this.prisma.quest.delete({ where: { id } });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')
-        throw new NotFoundException(`Quest with ID ${id} not found`);
-      throw new InternalServerErrorException('Error deleting quest');
-    }
+  async remove(id: string) {
+    return this.prisma.quest.delete({ where: { id } });
   }
 
+  // 🎮 Métodos de sistema de quest para personagens
+  async acceptQuest(characterId: string, questId: string) {
+    // Verifica se já existe
+    const existing = await this.prisma.characterQuest.findUnique({
+      where: { characterId_questId: { characterId, questId } },
+    });
+    if (existing) throw new BadRequestException('Quest already accepted');
 
-  async findByCharacter(characterId: string): Promise<Quest[]> {
-    return this.prisma.quest.findMany({ where: { characterId } });
+    return this.prisma.characterQuest.create({
+      data: {
+        characterId,
+        questId,
+        status: 'InProgress',
+        acceptedAt: new Date(),
+      },
+    });
   }
 
+  async completeQuest(characterId: string, questId: string) {
+    return this.prisma.characterQuest.update({
+      where: { characterId_questId: { characterId, questId } },
+      data: { status: 'Completed', completedAt: new Date() },
+    });
+  }
 
-  async findByStatus(status: QuestStatus): Promise<Quest[]> {
-    return this.prisma.quest.findMany({ where: { status } });
+  async failQuest(characterId: string, questId: string) {
+    return this.prisma.characterQuest.update({
+      where: { characterId_questId: { characterId, questId } },
+      data: { status: 'Failed', completedAt: new Date() },
+    });
+  }
+
+  async questsByCharacter(characterId: string) {
+    return this.prisma.characterQuest.findMany({
+      where: { characterId },
+      include: { quest: true },
+    });
+  }
+
+  async questsByStatus(status: QuestStatus) {
+    return this.prisma.characterQuest.findMany({
+      where: { status },
+      include: { quest: true, character: true },
+    });
   }
 }

@@ -1,5 +1,6 @@
-import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
+import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { QuestStatus } from '../enums/questEnum';
+import { CharacterQuest } from 'src/modules/character/entities/character-quest.entity';
 
 @ObjectType()
 export class Quest {
@@ -21,10 +22,18 @@ export class Quest {
   @Field(() => QuestStatus)
   status: QuestStatus;
 
+  @Field({ nullable: true })
+  locationId?: string;
+
+  @Field({ nullable: true })
+  npcId?: string;
 
   @Field()
   createdAt: Date;
 
   @Field()
   updatedAt: Date;
+
+  @Field(() => [CharacterQuest], { nullable: 'items' })
+  characters?: CharacterQuest[];
 }

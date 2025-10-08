@@ -14,90 +14,50 @@ import { Quest } from './entities/quest.entity';
 import { QuestCreateInput } from './dto/create-quest.input';
 import { UpdateQuestInput } from './dto/update-quest.input';
 import { QuestStatus } from './enums/questEnum';
+import { CharacterQuest } from '../character/entities/character-quest.entity';
 
 @Resolver(() => Quest)
 export class QuestResolver {
-  constructor(private readonly questService: QuestService) { }
+  constructor(private readonly questService: QuestService) {}
 
-  /** 🧩 Criar Quest */
   @Mutation(() => Quest)
-  async createQuest(@Args('data') data: QuestCreateInput): Promise<Quest> {
-    try {
-      const quest = await this.questService.create(data);
-      return quest as Quest;
-    } catch (error) {
-      if (error instanceof BadRequestException) throw error;
-      throw new InternalServerErrorException(`Error creating quest: ${error.message}`);
-    }
+  createQuest(@Args('data') data: QuestCreateInput) {
+    return this.questService.create(data);
   }
 
-  /** 📋 Buscar todas as Quests */
-  @Query(() => [Quest], { name: 'quests' })
-  async findAll(): Promise<Quest[]> {
-    try {
-      return await this.questService.findAll();
-    } catch (error) {
-      throw new InternalServerErrorException(`Error fetching quests: ${error.message}`);
-    }
+  @Query(() => [Quest])
+  quests() {
+    return this.questService.findAll();
   }
 
-  /** 🔍 Buscar Quest por ID */
-  @Query(() => Quest, { name: 'quest' })
-  async findOne(@Args('id') id: string): Promise<Quest> {
-    try {
-      const quest = await this.questService.findOne(id);
-      return quest;
-    } catch (error) {
-      if (error instanceof NotFoundException) throw error;
-      throw new InternalServerErrorException(`Error fetching quest ${id}: ${error.message}`);
-    }
+  @Query(() => Quest)
+  quest(@Args('id') id: string) {
+    return this.questService.findOne(id);
   }
 
-  /** 🎮 Buscar Quests de um personagem */
-  @Query(() => [Quest], { name: 'questsByCharacter' })
-  async findByCharacter(
-    @Args('characterId') characterId: string,
-  ): Promise<Quest[]> {
-    if (!characterId) throw new BadRequestException('Character ID is required');
-
-    try {
-      return await this.questService.findByCharacter(characterId);
-    } catch (error) {
-      throw new InternalServerErrorException(`Error fetching character quests: ${error.message}`);
-    }
+  @Mutation(() => CharacterQuest)
+  acceptQuest(@Args('characterId') characterId: string, @Args('questId') questId: string) {
+    return this.questService.acceptQuest(characterId, questId);
   }
 
-  /** 🧭 Buscar Quests por status */
-  @Query(() => [Quest], { name: 'questsByStatus' })
-  async findByStatus(
-    @Args('status', { type: () => QuestStatus }) status: QuestStatus,
-  ): Promise<Quest[]> {
-    try {
-      return await this.questService.findByStatus(status);
-    } catch (error) {
-      throw new InternalServerErrorException(`Error fetching quests by status: ${error.message}`);
-    }
+  @Mutation(() => CharacterQuest)
+  completeQuest(@Args('characterId') characterId: string, @Args('questId') questId: string) {
+    return this.questService.completeQuest(characterId, questId);
   }
 
-  /** 🛠️ Atualizar Quest */
-  @Mutation(() => Quest)
-  async updateQuest(@Args('data') data: UpdateQuestInput): Promise<Quest> {
-    try {
-      return await this.questService.update(data.id, data);
-    } catch (error) {
-      if (error instanceof NotFoundException) throw error;
-      throw new InternalServerErrorException(`Error updating quest ${data.id}: ${error.message}`);
-    }
+  @Mutation(() => CharacterQuest)
+  failQuest(@Args('characterId') characterId: string, @Args('questId') questId: string) {
+    return this.questService.failQuest(characterId, questId);
   }
 
-  /** ❌ Deletar Quest */
-  @Mutation(() => Quest)
-  async removeQuest(@Args('id') id: string): Promise<Quest> {
-    try {
-      return await this.questService.remove(id);
-    } catch (error) {
-      if (error instanceof NotFoundException) throw error;
-      throw new InternalServerErrorException(`Error deleting quest ${id}: ${error.message}`);
-    }
+  @Query(() => [CharacterQuest])
+  questsByCharacter(@Args('characterId') characterId: string) {
+    return this.questService.questsByCharacter(characterId);
+  }
+
+  @Query(() => [CharacterQuest])
+  questsByStatus(@Args('status', { type: () => QuestStatus }) status: QuestStatus) {
+    return this.questService.questsByStatus(status);
   }
 }
+
