@@ -1,234 +1,229 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-
-model User {
-  id        String      @id @default(uuid())
-  name      String
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  characters Character[]
+generator client {
+  provider = "prisma-client-js"
 }
+
+// ========================
+// ENUMS
+// ========================
+enum ArmorRarity {
+  Common
+  Epic
+  Legendary
+  Rare
+  Uncommon
+}
+
+enum ArmorSlot {
+  Arms
+  Chest
+  Feet
+  Head
+  Legs
+}
+
+enum ArmorType {
+  Heavy
+  Light
+  Medium
+  PowerArmor
+}
+
+enum ItemType {
+  Aid
+  Ammo
+  Consumable
+  Material
+  Quest
+}
+
+enum QuestStatus {
+  Completed
+  Failed
+  InProgress
+  Pending
+}
+
+enum WeaponType {
+  Energy
+  Explosive
+  Heavy
+  Melee
+  Pistol
+  Rifle
+}
+
+// ========================
+// MODELS
+// ========================
+model Armor {
+  id        String        @id @default(uuid())
+  defense   Int
+  name      String        @unique
+  owners    CharacterArmor[]
+  rarity    ArmorRarity
+  slot      ArmorSlot
+  type      ArmorType
+  value     Int           @default(0)
+  weight    Float
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
 model Character {
-  id             String       @id @default(uuid())
-  name           String       @unique
-  level          Int          @default(1)
-  experience     Int          @default(0)
-
-  // SPECIAL
-  strength       Int
-  perception     Int
-  endurance      Int
-  charisma       Int
-  intelligence   Int
-  agility        Int
-  luck           Int
-
-  // status
-  hitPoints      Int          @default(100)
-  actionPoints   Int          @default(50)
-  radiation      Int          @default(0)
-  caps           Int          @default(0) 
-
-  // relacionamentos
-  perks          CharacterPerk[]
-  skills         CharacterSkill[]
-  weapons        CharacterWeapon[]
-  armors         CharacterArmor[]
-  inventory      InventoryItem[]
-  faction        Faction?      @relation(fields: [factionId], references: [id])
-  factionId      String?
-  quest          Quest[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-
-  user           User?         @relation(fields: [userId], references: [id])
-  userId         String?
+  id           String          @id @default(uuid())
+  actionPoints Int             @default(50)
+  agility      Int
+  charisma     Int
+  endurance    Int
+  experience   Int             @default(0)
+  faction      Faction?        @relation(fields: [factionId], references: [id])
+  factionId    String?
+  hitPoints    Int             @default(100)
+  intelligence Int
+  level        Int             @default(1)
+  luck         Int
+  name         String          @unique
+  perks        CharacterPerk[]
+  perception   Int
+  radiation    Int             @default(0)
+  skills       CharacterSkill[]
+  strength     Int
+  armors       CharacterArmor[]
+  weapons      CharacterWeapon[]
+  inventory    InventoryItem[]
+  quest        Quest[]
+  caps         Int             @default(0)
+  user         User?           @relation(fields: [userId], references: [id])
+  userId       String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 }
 
-model Perk {
-  id          String          @id @default(uuid())
-  name        String          @unique
-  description String
-  requiredLevel Int?
-  effects     Json?          
-  characters  CharacterPerk[]
+model CharacterArmor {
+  id          String    @id @default(uuid())
+  armor       Armor     @relation(fields: [armorId], references: [id])
+  armorId     String
+  character   Character @relation(fields: [characterId], references: [id])
+  characterId String
+  equipped    Boolean   @default(false)
+  slot        ArmorSlot
+
+  @@unique([characterId, armorId])
+  @@unique([characterId, slot])
 }
 
 model CharacterPerk {
   id           String    @id @default(uuid())
+  acquiredAt   DateTime  @default(now())
   character    Character @relation(fields: [characterId], references: [id])
   characterId  String
   perk         Perk      @relation(fields: [perkId], references: [id])
   perkId       String
-  acquiredAt   DateTime  @default(now())
-}
-
-model Skill {
-  id          String           @id @default(uuid())
-  name        String           @unique
-  description String
-  baseStat    String           
-  characters  CharacterSkill[]
 }
 
 model CharacterSkill {
   id           String    @id @default(uuid())
   character    Character @relation(fields: [characterId], references: [id])
   characterId  String
+  level        Int       @default(1)
   skill        Skill     @relation(fields: [skillId], references: [id])
   skillId      String
-  level        Int       @default(1)
-}
-
-model Weapon {
-  id           String     @id @default(uuid())
-  name         String     @unique
-  type         WeaponType
-  damage       Int
-  range        Int?
-  weight       Float?
-  value        Int        @default(0)
-  ammoType     String?    
-  rarity       String?    
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  owners       CharacterWeapon[]
-}
-
-
-enum WeaponType {
-  Melee
-  Pistol
-  Rifle
-  Energy
-  Heavy
-  Explosive
-}
-
-model Armor {
-  id           String     @id @default(uuid())
-  name         String     @unique
-  type         ArmorType
-  defense      Int
-  weight       Float     
-  value        Int        @default(0)
-  rarity       ArmorRarity 
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  owners       CharacterArmor[]
-  slot     ArmorSlot
-}
-enum ArmorRarity {
-  Common
-  Uncommon
-  Rare
-  Epic
-  Legendary 
-}
-
-model CharacterArmor {
-  id          String    @id @default(uuid())
-  character   Character @relation(fields: [characterId], references: [id])
-  characterId String
-  armor       Armor     @relation(fields: [armorId], references: [id])
-  armorId     String
-  slot        ArmorSlot
-  equipped    Boolean   @default(false)
-
-  @@unique([characterId, slot])  
-  @@unique([characterId, armorId]) 
-}
-
-enum ArmorSlot {
-  Head
-  Chest
-  Legs
-  Arms
-  Feet
-}
-
-
-enum ArmorType {
-  Light
-  Medium
-  Heavy
-  PowerArmor
-}
-
-model Item {
-  id           String     @id @default(uuid())
-  name         String     @unique
-  type         ItemType
-  description  String?
-  value        Int        @default(0)
-  weight       Float?
-  effects      Json?     
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  inventories  InventoryItem[]
-}
-
-model InventoryItem {
-  id           String    @id @default(uuid())
-  character    Character @relation(fields: [characterId], references: [id])
-  characterId  String
-  item         Item      @relation(fields: [itemId], references: [id])
-  itemId       String
-  quantity     Int       @default(1)
-}
-
-enum ItemType {
-  Consumable
-  Aid
-  Ammo
-  Material
-  Quest
-}
-
-model Faction {
-  id           String     @id @default(uuid())
-  name         String     @unique
-  description  String?
-  alignment    String?    
-  reputation   Int        @default(0)
-  members      Character[]
-}
-
-model Quest {
-  id           String     @id @default(uuid())
-  title        String
-  description  String
-  status       QuestStatus @default(Pending)
-  rewardCaps   Int         @default(0)
-  experience   Int         @default(100)
-  assignedTo   Character?  @relation(fields: [characterId], references: [id])
-  characterId  String?
-}
-
-enum QuestStatus {
-  Pending
-  InProgress
-  Completed
-  Failed
 }
 
 model CharacterWeapon {
   id          String    @id @default(uuid())
   character   Character @relation(fields: [characterId], references: [id])
   characterId String
+  equipped    Boolean   @default(false)
   weapon      Weapon    @relation(fields: [weaponId], references: [id])
   weaponId    String
-  equipped    Boolean   @default(false)
 
   @@unique([characterId, weaponId])
 }
 
+model Faction {
+  id          String      @id @default(uuid())
+  alignment   String?
+  description String?
+  members     Character[]
+  name        String      @unique
+  reputation  Int         @default(0)
+}
 
+model InventoryItem {
+  id          String    @id @default(uuid())
+  character   Character @relation(fields: [characterId], references: [id])
+  characterId String
+  item        Item      @relation(fields: [itemId], references: [id])
+  itemId      String
+  quantity    Int       @default(1)
+}
+
+model Item {
+  id          String          @id @default(uuid())
+  description String?
+  effects     Json?
+  inventories InventoryItem[]
+  name        String          @unique
+  type        ItemType
+  value       Int             @default(0)
+  weight      Float?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model Perk {
+  id            String          @id @default(uuid())
+  characters    CharacterPerk[]
+  description   String
+  effects       Json?
+  name          String          @unique
+  requiredLevel Int?
+}
+
+model Quest {
+  assignedTo  Character?  @relation(fields: [characterId], references: [id])
+  characterId String?
+  description String
+  experience  Int          @default(100)
+  id          String       @id @default(uuid())
+  rewardCaps  Int          @default(0)
+  status      QuestStatus  @default(Pending)
+  title       String
+}
+
+model Skill {
+  characters  CharacterSkill[]
+  baseStat    String
+  description String
+  id          String       @id @default(uuid())
+  name        String       @unique
+}
+
+model User {
+  characters Character[]
+  createdAt  DateTime @default(now())
+  id         String   @id @default(uuid())
+  name       String
+  updatedAt  DateTime @updatedAt
+}
+
+model Weapon {
+  damage      Int
+  id          String             @id @default(uuid())
+  name        String             @unique
+  owners      CharacterWeapon[]
+  range       Int?
+  type        WeaponType
+  value       Int                @default(0)
+  ammoType    String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  rarity      String?
+  weight      Float?
+}
