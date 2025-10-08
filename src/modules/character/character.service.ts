@@ -1,117 +1,145 @@
-
-import { ArmorSlot } from '@prisma/client';
-import { UpdateCharacterInput } from './dto/update-character.input';
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCharacterInput } from './dto/create-character.input';
+import { UpdateCharacterInput } from './dto/update-character.input';
+import { ArmorSlot } from '@prisma/client';
 
 @Injectable()
 export class CharacterService {
-    constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
-    create(data: CreateCharacterInput) {
-        return this.prisma.character.create({ data });
+  /** Criar personagem */
+  async create(data: CreateCharacterInput) {
+    if (!data.name?.trim()) throw new BadRequestException('Character name is required');
+
+    try {
+      return await this.prisma.character.create({ data });
+    } catch (error) {
+      throw new InternalServerErrorException('Error creating character');
     }
+  }
 
-    findAll() {
-        return this.prisma.character.findMany({
-            include: {
-                weapons: { include: { weapon: true } },
-                armors: { include: { armor: true } },
-                perks: true,
-                inventory: { include: { item: true } },
-            },
-        });
+  /** Buscar todos os personagens */
+  async findAll() {
+    return this.prisma.character.findMany({
+      include: {
+        weapons: { include: { weapon: true } },
+        armors: { include: { armor: true } },
+        perks: true,
+        inventory: { include: { item: true } },
+      },
+    });
+  }
+
+  /** Buscar personagem pelo ID */
+  async findOne(id: string) {
+    const character = await this.prisma.character.findUnique({
+      where: { id },
+      include: {
+        weapons: { include: { weapon: true } },
+        armors: { include: { armor: true } },
+        perks: true,
+        inventory: { include: { item: true } },
+      },
+    });
+
+    if (!character) throw new NotFoundException(`Character with ID ${id} not found`);
+    return character;
+  }
+
+  /** Atualizar personagem */
+  async update(id: string, data: UpdateCharacterInput) {
+    try {
+      return await this.prisma.character.update({ where: { id }, data });
+    } catch (error) {
+      throw new NotFoundException(`Character with ID ${id} not found`);
     }
+  }
 
-    findOne(id: string) {
-        return this.prisma.character.findUnique({
-            where: { id },
-            include: {
-                weapons: { include: { weapon: true } },
-                armors: { include: { armor: true } },
-                perks: true,
-                inventory: { include: { item: true } },
-            },
-        });
+  /** Remover personagem */
+  async remove(id: string) {
+    try {
+      return await this.prisma.character.delete({ where: { id } });
+    } catch (error) {
+      throw new NotFoundException(`Character with ID ${id} not found`);
     }
+  }
 
-    update(id: string, data: UpdateCharacterInput) {
-        return this.prisma.character.update({ where: { id }, data });
+  /** EQUIP WEAPON */
+  async equipWeapon(characterId: string, weaponId: string) {
+    const character = await this.findOne(characterId);
+    const weapon = await this.prisma.weapon.findUnique({ where: { id: weaponId } });
+    if (!weapon) throw new NotFoundException('Weapon not found');
+
+    try {
+      await this.prisma.characterWeapon.upsert({
+        where: { characterId_weaponId: { characterId, weaponId } },
+        update: { equipped: true },
+        create: { characterId, weaponId, equipped: true },
+      });
+      return this.findOne(characterId);
+    } catch (error) {
+      throw new InternalServerErrorException('Error equipping weapon');
     }
+  }
 
-    remove(id: string) {
-        return this.prisma.character.delete({ where: { id } });
+  /** UNEQUIP WEAPON */
+  async unequipWeapon(characterId: string, weaponId: string) {
+    try {
+      await this.prisma.characterWeapon.updateMany({
+        where: { characterId, weaponId, equipped: true },
+        data: { equipped: false },
+      });
+      return this.findOne(characterId);
+    } catch (error) {
+      throw new InternalServerErrorException('Error unequipping weapon');
     }
+  }
 
-    /** EQUIP WEAPON */
-    async equipWeapon(characterId: string, weaponId: string) {
-        // Verifica se character e weapon existem
-        const character = await this.prisma.character.findUnique({ where: { id: characterId } });
-        const weapon = await this.prisma.weapon.findUnique({ where: { id: weaponId } });
+  /** EQUIP ARMOR */
+  async equipArmor(characterId: string, armorId: string, slot: string) {
+    const character = await this.findOne(characterId);
+    const armor = await this.prisma.armor.findUnique({ where: { id: armorId } });
+    if (!armor) throw new NotFoundException('Armor not found');
 
-        if (!character || !weapon) throw new Error('Character or Weapon not found');
+    const slotEnum = slot as ArmorSlot;
+    if (!Object.values(ArmorSlot).includes(slotEnum)) throw new BadRequestException('Invalid armor slot');
 
-        // Cria ou atualiza a relação na tabela CharacterWeapon
-        await this.prisma.characterWeapon.upsert({
-            where: {
-                characterId_weaponId: { characterId, weaponId },
-            },
-            update: { equipped: true },
-            create: {
-                character: { connect: { id: characterId } },
-                weapon: { connect: { id: weaponId } },
-                equipped: true,
-            },
-        });
-
-        // Retorna o Character atualizado
-        return this.findOne(characterId);
+    try {
+      await this.prisma.characterArmor.upsert({
+        where: { characterId_armorId: { characterId, armorId } },
+        update: { equipped: true, slot: slotEnum },
+        create: { characterId, armorId, equipped: true, slot: slotEnum },
+      });
+      return this.findOne(characterId);
+    } catch (error) {
+      throw new InternalServerErrorException('Error equipping armor');
     }
+  }
 
-    /** UNEQUIP WEAPON */
-    async unequipWeapon(characterId: string, weaponId: string) {
-        await this.prisma.characterWeapon.updateMany({
-            where: { characterId, weaponId, equipped: true },
-            data: { equipped: false },
-        });
-        return this.findOne(characterId);
+  /** UNEQUIP ARMOR BY SLOT */
+  async unequipArmorSlot(characterId: string, slot: ArmorSlot) {
+    try {
+      await this.prisma.characterArmor.updateMany({
+        where: { characterId, slot, equipped: true },
+        data: { equipped: false },
+      });
+      return this.findOne(characterId);
+    } catch (error) {
+      throw new InternalServerErrorException('Error unequipping armor slot');
     }
+  }
 
-    /** EQUIP ARMOR */
-
-    async equipArmor(characterId: string, armorId: string, slot: string) {
-        
-        const slotEnum = slot as ArmorSlot;
-        if (!Object.values(ArmorSlot).includes(slotEnum)) throw new Error('Invalid slot value');
-        await this.prisma.characterArmor.upsert({
-            where: { characterId_armorId: { characterId, armorId } },
-            update: { equipped: true, slot: slotEnum },
-            create: {
-                characterId,
-                armorId,
-                equipped: true,
-                slot: slotEnum,
-            },
-        });
-        return this.findOne(characterId);
+  /** UNEQUIP ALL ARMOR */
+  async unequipAllArmor(characterId: string) {
+    try {
+      await this.prisma.characterArmor.updateMany({
+        where: { characterId, equipped: true },
+        data: { equipped: false },
+      });
+      return this.findOne(characterId);
+    } catch (error) {
+      throw new InternalServerErrorException('Error unequipping all armor');
     }
-
-    async unequipArmorSlot(characterId: string, slot: ArmorSlot) {
-        await this.prisma.characterArmor.updateMany({
-            where: { characterId, slot, equipped: true },
-            data: { equipped: false },
-        });
-
-        return this.findOne(characterId);
-    }
-
-    async unequipAllArmor(characterId: string) {
-        await this.prisma.characterArmor.updateMany({
-            where: { characterId, equipped: true },
-            data: { equipped: false },
-        });
-
-        return this.findOne(characterId);
-    }
+  }
 }

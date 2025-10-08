@@ -3,60 +3,86 @@ import { CharacterService } from './character.service';
 import { Character } from './entities/character.entity';
 import { CreateCharacterInput } from './dto/create-character.input';
 import { UpdateCharacterInput } from './dto/update-character.input';
-import { EquipWeaponInput } from './dto/equip-weapon.input';
 import { EquipArmorInput } from './dto/equip-armor.input';
 import { ArmorSlot } from '@prisma/client';
+import { UserInputError } from 'apollo-server-express';
 
 @Resolver(() => Character)
 export class CharacterResolver {
-    constructor(private readonly characterService: CharacterService) { }
+  constructor(private readonly characterService: CharacterService) {}
 
-    @Mutation(() => Character)
-    createCharacter(@Args('data') data: CreateCharacterInput) {
-        return this.characterService.create(data);
-    }
+  /** Criar personagem */
+  @Mutation(() => Character)
+  async createCharacter(@Args('data') data: CreateCharacterInput) {
+    if (!data.name?.trim()) throw new UserInputError('Character name cannot be empty');
+    return this.characterService.create(data);
+  }
 
-    @Mutation(() => Character)
-    equipWeapon(@Args('characterId') characterId: string, @Args('weaponId') weaponId: string) {
-        return this.characterService.equipWeapon(characterId, weaponId);
-    }
+  /** Buscar todos os personagens */
+  @Query(() => [Character], { name: 'characters' })
+  findAll() {
+    return this.characterService.findAll();
+  }
 
-    @Mutation(() => Character)
-    unequipWeapon(@Args('characterId') characterId: string, @Args('weaponId') weaponId: string) {
-        return this.characterService.unequipWeapon(characterId, weaponId);
-    }
+  /** Buscar personagem pelo ID */
+  @Query(() => Character, { name: 'character' })
+  async findOne(@Args('id') id: string) {
+    if (!id.match(/^[a-f0-9-]+$/i)) throw new UserInputError('Invalid character ID format');
+    return this.characterService.findOne(id);
+  }
 
-    @Mutation(() => Character)
-    equipArmor(@Args('data') data: EquipArmorInput) {
-        return this.characterService.equipArmor(data?.characterId, data.armorId, data.slot);
-    }
+  /** Atualizar personagem */
+  @Mutation(() => Character)
+  async updateCharacter(@Args('id') id: string, @Args('data') data: UpdateCharacterInput) {
+    if (!id.match(/^[a-f0-9-]+$/i)) throw new UserInputError('Invalid character ID format');
+    return this.characterService.update(id, data);
+  }
 
-    @Mutation(() => Character)
-    unequipArmorSlot(@Args('characterId') characterId: string, @Args('slot') slot: ArmorSlot) {
-        return this.characterService.unequipArmorSlot(characterId, slot);
-    }
+  /** Remover personagem */
+  @Mutation(() => Character)
+  async removeCharacter(@Args('id') id: string) {
+    if (!id.match(/^[a-f0-9-]+$/i)) throw new UserInputError('Invalid character ID format');
+    return this.characterService.remove(id);
+  }
 
-    @Mutation(() => Character)
-    unequipAllArmor(@Args('characterId') characterId: string) {
-        return this.characterService.unequipAllArmor(characterId);
-    }
-    @Query(() => [Character], { name: 'characters' })
-    findAll() {
-        return this.characterService.findAll();
-    }
+  /** Equipar arma */
+  @Mutation(() => Character)
+  async equipWeapon(@Args('characterId') characterId: string, @Args('weaponId') weaponId: string) {
+    if (!characterId?.trim() || !weaponId?.trim())
+      throw new UserInputError('Character ID and Weapon ID are required');
+    return this.characterService.equipWeapon(characterId, weaponId);
+  }
 
-    @Query(() => Character, { name: 'character' })
-    findOne(@Args('id') id: string) {
-        return this.characterService.findOne(id);
-    }
+  /** Desequipar arma */
+  @Mutation(() => Character)
+  async unequipWeapon(@Args('characterId') characterId: string, @Args('weaponId') weaponId: string) {
+    if (!characterId?.trim() || !weaponId?.trim())
+      throw new UserInputError('Character ID and Weapon ID are required');
+    return this.characterService.unequipWeapon(characterId, weaponId);
+  }
 
-    @Mutation(() => Character)
-    updateCharacter(@Args('id') id: string, @Args('data') data: UpdateCharacterInput) {
-        return this.characterService.update(id, data);
-    }
+  /** Equipar armadura */
+  @Mutation(() => Character)
+  async equipArmor(@Args('data') data: EquipArmorInput) {
+    if (!data.characterId?.trim() || !data.armorId?.trim())
+      throw new UserInputError('Character ID and Armor ID are required');
+    if (!Object.values(ArmorSlot).includes(data.slot as ArmorSlot))
+      throw new UserInputError('Invalid armor slot');
+    return this.characterService.equipArmor(data.characterId, data.armorId, data.slot);
+  }
 
-    @Mutation(() => Character)
-    removeCharacter(@Args('id') id: string) {
-        return this.characterService.remove(id);
-    }
+  /** Desequipar armadura por slot */
+  @Mutation(() => Character)
+  async unequipArmorSlot(@Args('characterId') characterId: string, @Args('slot') slot: ArmorSlot) {
+    if (!characterId?.trim()) throw new UserInputError('Character ID is required');
+    if (!Object.values(ArmorSlot).includes(slot)) throw new UserInputError('Invalid armor slot');
+    return this.characterService.unequipArmorSlot(characterId, slot);
+  }
+
+  /** Desequipar todas as armaduras */
+  @Mutation(() => Character)
+  async unequipAllArmor(@Args('characterId') characterId: string) {
+    if (!characterId?.trim()) throw new UserInputError('Character ID is required');
+    return this.characterService.unequipAllArmor(characterId);
+  }
 }
