@@ -118,13 +118,20 @@ model Armor {
   name         String     @unique
   type         ArmorType
   defense      Int
-  weight       Float?
+  weight       Float     
   value        Int        @default(0)
-  rarity       String?
+  rarity       ArmorRarity 
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   owners       CharacterArmor[]
   slot     ArmorSlot
+}
+enum ArmorRarity {
+  Common
+  Uncommon
+  Rare
+  Epic
+  Legendary 
 }
 
 model CharacterArmor {

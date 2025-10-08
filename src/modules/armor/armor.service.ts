@@ -1,25 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateArmorInput } from './dto/create-armor.input';
 import { UpdateArmorInput } from './dto/update-armor.input';
-import { ArmorSlot } from '@prisma/client'; 
+import { Armor, ArmorSlot } from '@prisma/client';
 
 @Injectable()
 export class ArmorService {
   constructor(private readonly prisma: PrismaService) {}
 
   /** Criar nova armadura */
-  async create(data: CreateArmorInput) {
-   
+  async create(data: CreateArmorInput): Promise<Armor> {
     if (!Object.values(ArmorSlot).includes(data.slot)) {
-      throw new Error(`Invalid armor slot: ${data.slot}`);
+      throw new BadRequestException(`Invalid armor slot: ${data.slot}`);
     }
 
     return this.prisma.armor.create({
       data: {
         name: data.name,
         type: data.type,
-        slot: data.slot, 
+        slot: data.slot,
         defense: data.defense,
         weight: data.weight,
         value: data.value,
@@ -29,20 +28,21 @@ export class ArmorService {
   }
 
   /** Buscar todas as armaduras */
-  findAll() {
+  findAll(): Promise<Armor[]> {
     return this.prisma.armor.findMany();
   }
 
   /** Buscar uma armadura pelo ID */
-  findOne(id: string) {
-    return this.prisma.armor.findUnique({ where: { id } });
+  async findOne(id: string): Promise<Armor> {
+    const armor = await this.prisma.armor.findUnique({ where: { id } });
+    if (!armor) throw new NotFoundException(`Armor with ID ${id} not found`);
+    return armor;
   }
 
   /** Atualizar armadura */
-  async update(id: string, data: UpdateArmorInput) {
-  
+  async update(id: string, data: UpdateArmorInput): Promise<Armor> {
     if (data.slot && !Object.values(ArmorSlot).includes(data.slot)) {
-      throw new Error(`Invalid armor slot: ${data.slot}`);
+      throw new BadRequestException(`Invalid armor slot: ${data.slot}`);
     }
 
     return this.prisma.armor.update({
@@ -52,7 +52,11 @@ export class ArmorService {
   }
 
   /** Remover armadura */
-  remove(id: string) {
-    return this.prisma.armor.delete({ where: { id } });
+  async remove(id: string): Promise<Armor> {
+    try {
+      return await this.prisma.armor.delete({ where: { id } });
+    } catch {
+      throw new NotFoundException(`Armor with ID ${id} not found`);
+    }
   }
 }

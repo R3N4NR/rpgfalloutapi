@@ -24,9 +24,9 @@ async function main() {
   // 🛡️ Armaduras
   const armors = await prisma.armor.createMany({
     data: [
-      { name: 'Leather Armor', type: ArmorType.Light, defense: 15, value: 150, slot: ArmorSlot.Chest },
-      { name: 'Combat Helmet', type: ArmorType.Medium, defense: 10, value: 120, slot: ArmorSlot.Head },
-      { name: 'Metal Boots', type: ArmorType.Heavy, defense: 8, value: 90, slot: ArmorSlot.Feet },
+      { name: 'Leather Armor', type: ArmorType.Light, defense: 15, value: 150, slot: ArmorSlot.Chest, rarity: 'Common', weight: 12.5 },
+      { name: 'Combat Helmet', type: ArmorType.Medium, defense: 10, value: 120, slot: ArmorSlot.Head, rarity: 'Common', weight: 12.5 },
+      { name: 'Metal Boots', type: ArmorType.Heavy, defense: 8, value: 90, slot: ArmorSlot.Feet, rarity: 'Common', weight: 12.5 },
     ],
   });
 
