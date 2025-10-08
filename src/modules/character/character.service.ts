@@ -2,7 +2,7 @@ import { Injectable, BadRequestException, NotFoundException, InternalServerError
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCharacterInput } from './dto/create-character.input';
 import { UpdateCharacterInput } from './dto/update-character.input';
-import { ArmorSlot } from '@prisma/client';
+import { ArmorSlot } from '../armor/enums/armorEnum';
 
 @Injectable()
 export class CharacterService {

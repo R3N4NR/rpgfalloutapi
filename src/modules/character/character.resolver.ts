@@ -4,12 +4,12 @@ import { Character } from './entities/character.entity';
 import { CreateCharacterInput } from './dto/create-character.input';
 import { UpdateCharacterInput } from './dto/update-character.input';
 import { EquipArmorInput } from './dto/equip-armor.input';
-import { ArmorSlot } from '@prisma/client';
 import { UserInputError } from 'apollo-server-express';
+import { ArmorSlot } from '../armor/enums/armorEnum';
 
 @Resolver(() => Character)
 export class CharacterResolver {
-  constructor(private readonly characterService: CharacterService) {}
+  constructor(private readonly characterService: CharacterService) { }
 
   /** Criar personagem */
   @Mutation(() => Character)
@@ -73,10 +73,11 @@ export class CharacterResolver {
 
   /** Desequipar armadura por slot */
   @Mutation(() => Character)
-  async unequipArmorSlot(@Args('characterId') characterId: string, @Args('slot') slot: ArmorSlot) {
+  async unequipArmorSlot(@Args('characterId') characterId: string,
+    @Args('unequipArmorSlot', { type: () => ArmorSlot }) unequipArmorSlot: ArmorSlot) {
     if (!characterId?.trim()) throw new UserInputError('Character ID is required');
-    if (!Object.values(ArmorSlot).includes(slot)) throw new UserInputError('Invalid armor slot');
-    return this.characterService.unequipArmorSlot(characterId, slot);
+    if (!Object.values(ArmorSlot).includes(unequipArmorSlot)) throw new UserInputError('Invalid armor slot');
+    return this.characterService.unequipArmorSlot(characterId, unequipArmorSlot);
   }
 
   /** Desequipar todas as armaduras */

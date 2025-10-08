@@ -1,5 +1,6 @@
 import { InputType, Field } from '@nestjs/graphql';
 import { IsNotEmpty } from 'class-validator';
+import { ArmorSlot } from 'src/modules/armor/enums/armorEnum';
 
 @InputType()
 export class EquipArmorInput {
@@ -11,7 +12,7 @@ export class EquipArmorInput {
   @IsNotEmpty()
   armorId: string;
 
-  @Field()
+  @Field(() => ArmorSlot)
   @IsNotEmpty()
-  slot: string;
+  slot: ArmorSlot;
 }
