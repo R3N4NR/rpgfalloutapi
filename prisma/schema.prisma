@@ -33,6 +33,15 @@ enum ArmorType {
   PowerArmor
 }
 
+enum EnemyType {
+  Animal
+  Humanoid
+  SuperMutant
+  Ghoul
+  Robot
+  Human
+}
+
 enum ItemType {
   Aid
   Ammo
@@ -48,6 +57,13 @@ enum QuestStatus {
   Pending
 }
 
+enum ResistanceType {
+  Bleed
+  Radiation
+  Energy
+  Physical
+}
+
 enum WeaponType {
   Energy
   Explosive
@@ -60,170 +76,257 @@ enum WeaponType {
 // ========================
 // MODELS
 // ========================
+
 model Armor {
-  id        String        @id @default(uuid())
+  id        String    @id @default(uuid())
+  name      String    @unique
   defense   Int
-  name      String        @unique
-  owners    CharacterArmor[]
   rarity    ArmorRarity
   slot      ArmorSlot
   type      ArmorType
-  value     Int           @default(0)
+  value     Int       @default(0)
   weight    Float
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  owners    CharacterArmor[]
 }
 
 model Character {
-  id           String          @id @default(uuid())
-  actionPoints Int             @default(50)
-  agility      Int
-  charisma     Int
-  endurance    Int
-  experience   Int             @default(0)
-  faction      Faction?        @relation(fields: [factionId], references: [id])
-  factionId    String?
-  hitPoints    Int             @default(100)
-  intelligence Int
-  level        Int             @default(1)
-  luck         Int
-  name         String          @unique
-  perks        CharacterPerk[]
-  perception   Int
-  radiation    Int             @default(0)
-  skills       CharacterSkill[]
+  id           String            @id @default(uuid())
+  name         String            @unique
+  level        Int               @default(1)
+  experience   Int               @default(0)
+  hitPoints    Int               @default(100)
+  actionPoints Int               @default(50)
+  radiation    Int               @default(0)
+  caps         Int               @default(0)
   strength     Int
-  armors       CharacterArmor[]
-  weapons      CharacterWeapon[]
-  inventory    InventoryItem[]
-  quest        Quest[]
-  caps         Int             @default(0)
-  user         User?           @relation(fields: [userId], references: [id])
-  userId       String?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  perception   Int
+  endurance    Int
+  charisma     Int
+  intelligence Int
+  agility      Int
+  luck         Int
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  // Relations
+  faction    Faction?          @relation(fields: [factionId], references: [id])
+  factionId  String?
+  location   Location?         @relation(fields: [locationId], references: [id])
+  locationId String?
+  user       User?             @relation(fields: [userId], references: [id])
+  userId     String?
+  perks      CharacterPerk[]
+  skills     CharacterSkill[]
+  armors     CharacterArmor[]
+  weapons    CharacterWeapon[]
+  inventory  InventoryItem[]
+  quest      Quest[]
 }
 
 model CharacterArmor {
   id          String    @id @default(uuid())
+  equipped    Boolean   @default(false)
+  slot        ArmorSlot
+
+  // Relations
   armor       Armor     @relation(fields: [armorId], references: [id])
   armorId     String
   character   Character @relation(fields: [characterId], references: [id])
   characterId String
-  equipped    Boolean   @default(false)
-  slot        ArmorSlot
 
   @@unique([characterId, armorId])
   @@unique([characterId, slot])
 }
 
 model CharacterPerk {
-  id           String    @id @default(uuid())
-  acquiredAt   DateTime  @default(now())
-  character    Character @relation(fields: [characterId], references: [id])
-  characterId  String
-  perk         Perk      @relation(fields: [perkId], references: [id])
-  perkId       String
+  id          String    @id @default(uuid())
+  acquiredAt  DateTime  @default(now())
+
+  // Relations
+  character   Character @relation(fields: [characterId], references: [id])
+  characterId String
+  perk        Perk      @relation(fields: [perkId], references: [id])
+  perkId      String
 }
 
 model CharacterSkill {
-  id           String    @id @default(uuid())
-  character    Character @relation(fields: [characterId], references: [id])
-  characterId  String
-  level        Int       @default(1)
-  skill        Skill     @relation(fields: [skillId], references: [id])
-  skillId      String
+  id          String    @id @default(uuid())
+  level       Int       @default(1)
+
+  // Relations
+  character   Character @relation(fields: [characterId], references: [id])
+  characterId String
+  skill       Skill     @relation(fields: [skillId], references: [id])
+  skillId     String
 }
 
 model CharacterWeapon {
   id          String    @id @default(uuid())
+  equipped    Boolean   @default(false)
+
+  // Relations
   character   Character @relation(fields: [characterId], references: [id])
   characterId String
-  equipped    Boolean   @default(false)
   weapon      Weapon    @relation(fields: [weaponId], references: [id])
   weaponId    String
 
   @@unique([characterId, weaponId])
 }
 
+model Enemy {
+  id          String         @id @default(uuid())
+  name        String         @unique
+  level       Int            @default(1)
+  damage      Int
+  hitPoints   Int            @default(100)
+  resistances ResistanceType
+  type        EnemyType
+  hostile     Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relations
+  drops       EnemyDrop[]
+}
+
+model EnemyDrop {
+  id       String  @id @default(uuid())
+  dropRate Float   @default(0.0)
+
+  // Relations
+  enemy    Enemy   @relation(fields: [enemyId], references: [id])
+  enemyId  String
+  item     Item    @relation(fields: [itemId], references: [id])
+  itemId   String
+}
+
 model Faction {
   id          String      @id @default(uuid())
+  name        String      @unique
   alignment   String?
   description String?
-  members     Character[]
-  name        String      @unique
   reputation  Int         @default(0)
+
+  // Relations
+  members     Character[]
 }
 
 model InventoryItem {
   id          String    @id @default(uuid())
+  quantity    Int       @default(1)
+
+  // Relations
   character   Character @relation(fields: [characterId], references: [id])
   characterId String
   item        Item      @relation(fields: [itemId], references: [id])
   itemId      String
-  quantity    Int       @default(1)
 }
 
 model Item {
   id          String          @id @default(uuid())
+  name        String          @unique
   description String?
   effects     Json?
-  inventories InventoryItem[]
-  name        String          @unique
   type        ItemType
   value       Int             @default(0)
   weight      Float?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+
+  // Relations
+  inventories InventoryItem[]
+  enemyDrops  EnemyDrop[]
+}
+
+model Location {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  spawnType   EnemyType
+  discovered  Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  quests      Quest[]
+  npcs        Npc[]
+  characters  Character[]
+}
+
+model Npc {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  dialogue    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  location    Location? @relation(fields: [locationId], references: [id])
+  locationId  String?
 }
 
 model Perk {
   id            String          @id @default(uuid())
-  characters    CharacterPerk[]
+  name          String          @unique
   description   String
   effects       Json?
-  name          String          @unique
   requiredLevel Int?
+
+  // Relations
+  characters    CharacterPerk[]
 }
 
 model Quest {
+  id          String      @id @default(uuid())
+  title       String
+  description String
+  experience  Int         @default(100)
+  rewardCaps  Int         @default(0)
+  status      QuestStatus @default(Pending)
+
+  // Relations
   assignedTo  Character?  @relation(fields: [characterId], references: [id])
   characterId String?
-  description String
-  experience  Int          @default(100)
-  id          String       @id @default(uuid())
-  rewardCaps  Int          @default(0)
-  status      QuestStatus  @default(Pending)
-  title       String
+  location    Location?   @relation(fields: [locationId], references: [id])
+  locationId  String?
 }
 
 model Skill {
-  characters  CharacterSkill[]
-  baseStat    String
+  id          String           @id @default(uuid())
+  name        String           @unique
   description String
-  id          String       @id @default(uuid())
-  name        String       @unique
+  baseStat    String
+
+  // Relations
+  characters  CharacterSkill[]
 }
 
 model User {
-  characters Character[]
-  createdAt  DateTime @default(now())
-  id         String   @id @default(uuid())
+  id         String      @id @default(uuid())
   name       String
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  // Relations
+  characters Character[]
 }
 
 model Weapon {
-  damage      Int
-  id          String             @id @default(uuid())
-  name        String             @unique
-  owners      CharacterWeapon[]
-  range       Int?
-  type        WeaponType
-  value       Int                @default(0)
-  ammoType    String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  rarity      String?
-  weight      Float?
+  id        String            @id @default(uuid())
+  name      String            @unique
+  damage    Int
+  type      WeaponType
+  value     Int               @default(0)
+  rarity    String?
+  range     Int?
+  ammoType  String?
+  weight    Float?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  // Relations
+  owners    CharacterWeapon[]
 }
