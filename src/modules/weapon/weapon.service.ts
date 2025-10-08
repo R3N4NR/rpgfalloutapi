@@ -1,32 +1,61 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Prisma, Weapon } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateWeaponInput } from './dto/create-weapon.input';
 import { UpdateWeaponInput } from './dto/update-weapon.input';
 
 @Injectable()
 export class WeaponService {
-    constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
-    create(data: CreateWeaponInput) {
-        return this.prisma.weapon.create({ data });
-    }
+  /** Criar arma */
+  async create(data: CreateWeaponInput): Promise<Weapon> {
+    if (!data.name?.trim()) throw new BadRequestException('Weapon name is required');
 
-    findAll() {
-        return this.prisma.weapon.findMany();
+    try {
+      return await this.prisma.weapon.create({ data });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ConflictException('Weapon name already exists');
+      }
+      throw new InternalServerErrorException('Error creating weapon');
     }
+  }
 
-    findOne(id: string) {
-        return this.prisma.weapon.findUnique({ where: { id } });
-    }
+  /** Buscar todas as armas */
+  async findAll(): Promise<Weapon[]> {
+    return this.prisma.weapon.findMany();
+  }
 
-    update(id: string, data: UpdateWeaponInput) {
-        return this.prisma.weapon.update({
-            where: { id },
-            data,
-        });
-    }
+  /** Buscar arma pelo ID */
+  async findOne(id: string): Promise<Weapon> {
+    const weapon = await this.prisma.weapon.findUnique({ where: { id } });
+    if (!weapon) throw new NotFoundException(`Weapon with ID ${id} not found`);
+    return weapon;
+  }
 
-    remove(id: string) {
-        return this.prisma.weapon.delete({ where: { id } });
+  /** Atualizar arma */
+  async update(id: string, data: UpdateWeaponInput): Promise<Weapon> {
+    try {
+      return await this.prisma.weapon.update({ where: { id }, data });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') throw new NotFoundException(`Weapon with ID ${id} not found`);
+        if (error.code === 'P2002') throw new ConflictException('Weapon name already exists');
+      }
+      throw new InternalServerErrorException('Error updating weapon');
     }
+  }
+
+  /** Remover arma */
+  async remove(id: string): Promise<Weapon> {
+    try {
+      return await this.prisma.weapon.delete({ where: { id } });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundException(`Weapon with ID ${id} not found`);
+      }
+      throw new InternalServerErrorException('Error removing weapon');
+    }
+  }
 }
