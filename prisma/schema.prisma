@@ -78,30 +78,30 @@ enum WeaponType {
 // ========================
 
 model Armor {
-  id        String    @id @default(uuid())
-  name      String    @unique
+  id        String      @id @default(uuid())
+  name      String      @unique
   defense   Int
   rarity    ArmorRarity
   slot      ArmorSlot
   type      ArmorType
-  value     Int       @default(0)
+  value     Int         @default(0)
   weight    Float
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   // Relations
-  owners    CharacterArmor[]
+  owners CharacterArmor[]
 }
 
 model Character {
-  id           String            @id @default(uuid())
-  name         String            @unique
-  level        Int               @default(1)
-  experience   Int               @default(0)
-  hitPoints    Int               @default(100)
-  actionPoints Int               @default(50)
-  radiation    Int               @default(0)
-  caps         Int               @default(0)
+  id           String   @id @default(uuid())
+  name         String   @unique
+  level        Int      @default(1)
+  experience   Int      @default(0)
+  hitPoints    Int      @default(100)
+  actionPoints Int      @default(50)
+  radiation    Int      @default(0)
+  caps         Int      @default(0)
   strength     Int
   perception   Int
   endurance    Int
@@ -109,8 +109,8 @@ model Character {
   intelligence Int
   agility      Int
   luck         Int
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
   faction    Faction?          @relation(fields: [factionId], references: [id])
@@ -128,9 +128,9 @@ model Character {
 }
 
 model CharacterArmor {
-  id          String    @id @default(uuid())
-  equipped    Boolean   @default(false)
-  slot        ArmorSlot
+  id       String    @id @default(uuid())
+  equipped Boolean   @default(false)
+  slot     ArmorSlot
 
   // Relations
   armor       Armor     @relation(fields: [armorId], references: [id])
@@ -143,8 +143,8 @@ model CharacterArmor {
 }
 
 model CharacterPerk {
-  id          String    @id @default(uuid())
-  acquiredAt  DateTime  @default(now())
+  id         String   @id @default(uuid())
+  acquiredAt DateTime @default(now())
 
   // Relations
   character   Character @relation(fields: [characterId], references: [id])
@@ -154,8 +154,8 @@ model CharacterPerk {
 }
 
 model CharacterSkill {
-  id          String    @id @default(uuid())
-  level       Int       @default(1)
+  id    String @id @default(uuid())
+  level Int    @default(1)
 
   // Relations
   character   Character @relation(fields: [characterId], references: [id])
@@ -165,9 +165,9 @@ model CharacterSkill {
 }
 
 model CharacterWeapon {
-  id          String    @id @default(uuid())
-  equipped    Boolean   @default(false)
-
+  id       String  @id @default(uuid())
+  equipped Boolean @default(false)
+  
   // Relations
   character   Character @relation(fields: [characterId], references: [id])
   characterId String
@@ -190,18 +190,19 @@ model Enemy {
   updatedAt   DateTime       @updatedAt
 
   // Relations
-  drops       EnemyDrop[]
+  drops EnemyDrop[]
 }
 
 model EnemyDrop {
-  id       String  @id @default(uuid())
-  dropRate Float   @default(0.0)
-
+  id        String   @id @default(uuid())
+  dropRate  Float    @default(0.0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   // Relations
-  enemy    Enemy   @relation(fields: [enemyId], references: [id])
-  enemyId  String
-  item     Item    @relation(fields: [itemId], references: [id])
-  itemId   String
+  enemy     Enemy    @relation(fields: [enemyId], references: [id])
+  enemyId   String
+  item      Item     @relation(fields: [itemId], references: [id])
+  itemId    String
 }
 
 model Faction {
@@ -210,14 +211,15 @@ model Faction {
   alignment   String?
   description String?
   reputation  Int         @default(0)
-
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   // Relations
   members     Character[]
 }
 
 model InventoryItem {
-  id          String    @id @default(uuid())
-  quantity    Int       @default(1)
+  id       String @id @default(uuid())
+  quantity Int    @default(1)
 
   // Relations
   character   Character @relation(fields: [characterId], references: [id])
@@ -227,15 +229,15 @@ model InventoryItem {
 }
 
 model Item {
-  id          String          @id @default(uuid())
-  name        String          @unique
+  id          String   @id @default(uuid())
+  name        String   @unique
   description String?
   effects     Json?
   type        ItemType
-  value       Int             @default(0)
+  value       Int      @default(0)
   weight      Float?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
   inventories InventoryItem[]
@@ -243,29 +245,29 @@ model Item {
 }
 
 model Location {
-  id          String      @id @default(uuid())
-  name        String      @unique
-  spawnType   EnemyType
-  discovered  Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id         String    @id @default(uuid())
+  name       String    @unique
+  spawnType  EnemyType
+  discovered Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   // Relations
-  quests      Quest[]
-  npcs        Npc[]
-  characters  Character[]
+  quests     Quest[]
+  npcs       Npc[]
+  characters Character[]
 }
 
 model Npc {
-  id          String    @id @default(uuid())
-  name        String    @unique
-  dialogue    Json?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String   @id @default(uuid())
+  name      String   @unique
+  dialogue  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  location    Location? @relation(fields: [locationId], references: [id])
-  locationId  String?
+  location   Location? @relation(fields: [locationId], references: [id])
+  locationId String?
 }
 
 model Perk {
@@ -274,7 +276,8 @@ model Perk {
   description   String
   effects       Json?
   requiredLevel Int?
-
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   // Relations
   characters    CharacterPerk[]
 }
@@ -286,9 +289,10 @@ model Quest {
   experience  Int         @default(100)
   rewardCaps  Int         @default(0)
   status      QuestStatus @default(Pending)
-
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   // Relations
-  assignedTo  Character?  @relation(fields: [characterId], references: [id])
+  character  Character?  @relation(fields: [characterId], references: [id])
   characterId String?
   location    Location?   @relation(fields: [locationId], references: [id])
   locationId  String?
@@ -299,34 +303,35 @@ model Skill {
   name        String           @unique
   description String
   baseStat    String
-
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   // Relations
   characters  CharacterSkill[]
 }
 
 model User {
-  id         String      @id @default(uuid())
-  name       String
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   characters Character[]
 }
 
 model Weapon {
-  id        String            @id @default(uuid())
-  name      String            @unique
+  id        String     @id @default(uuid())
+  name      String     @unique
   damage    Int
   type      WeaponType
-  value     Int               @default(0)
+  value     Int        @default(0)
   rarity    String?
   range     Int?
   ammoType  String?
   weight    Float?
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   // Relations
-  owners    CharacterWeapon[]
+  owners CharacterWeapon[]
 }

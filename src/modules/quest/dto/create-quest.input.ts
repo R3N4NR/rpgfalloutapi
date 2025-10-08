@@ -24,7 +24,4 @@ export class QuestCreateInput {
     @Min(0)
     experience: number;
 
-    @Field({ nullable: true })
-    @IsOptional()
-    characterId?: string;
 }

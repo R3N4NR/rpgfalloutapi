@@ -1,8 +1,6 @@
-
-export enum QuestStatus {
-  PENDING = 'Pending',
-  IN_PROGRESS = 'InProgress',
-  COMPLETED = 'Completed',
-}
 import { registerEnumType } from '@nestjs/graphql';
-registerEnumType(QuestStatus, { name: 'QuestStatus' });
+import { QuestStatus as PrismaQuestStatus } from '@prisma/client';
+
+export { PrismaQuestStatus as QuestStatus };
+
+registerEnumType(PrismaQuestStatus, { name: 'QuestStatus' });

@@ -170,9 +170,9 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 scalar JSON
 
 type Mutation {
-  addInventoryItem(data: CreateInventoryItemInput!): InventoryItem!
   createArmor(data: CreateArmorInput!): Armor!
   createCharacter(data: CreateCharacterInput!): Character!
+  createInventoryItem(data: CreateInventoryItemInput!): InventoryItem!
   createItem(data: CreateItemInput!): Item!
   createPerk(data: CreatePerkInput!): Perk!
   createQuest(data: QuestCreateInput!): Quest!
@@ -180,25 +180,25 @@ type Mutation {
   createWeapon(data: CreateWeaponInput!): Weapon!
   equipArmor(data: EquipArmorInput!): Character!
   equipWeapon(characterId: String!, weaponId: String!): Character!
-  removeArmor(id: Int!): Armor!
+  removeArmor(id: String!): Armor!
   removeCharacter(id: String!): Character!
   removeInventoryItem(id: String!): InventoryItem!
   removeItem(id: String!): Item!
   removePerk(id: String!): Perk!
   removeQuest(id: String!): Quest!
   removeUser(id: String!): User!
-  removeWeapon(id: Int!): Weapon!
+  removeWeapon(id: String!): Weapon!
   unequipAllArmor(characterId: String!): Character!
   unequipArmorSlot(characterId: String!, slot: String!): Character!
   unequipWeapon(characterId: String!, weaponId: String!): Character!
   updateArmor(data: UpdateArmorInput!): Armor!
   updateCharacter(data: UpdateCharacterInput!, id: String!): Character!
-  updateInventoryItem(data: UpdateInventoryItemInput!): InventoryItem!
-  updateItem(data: UpdateItemInput!): Item!
+  updateInventoryItem(data: UpdateInventoryItemInput!, id: String!): InventoryItem!
+  updateItem(data: UpdateItemInput!, id: String!): Item!
   updatePerk(data: UpdatePerkInput!, id: String!): Perk!
-  updateQuest(data: UpdateQuestInput!, id: String!): Quest!
+  updateQuest(data: UpdateQuestInput!): Quest!
   updateUser(data: UpdateUserInput!, id: String!): User!
-  updateWeapon(data: UpdateWeaponInput!): Weapon!
+  updateWeapon(data: UpdateWeaponInput!, id: String!): Weapon!
 }
 
 type Perk {
@@ -212,11 +212,11 @@ type Perk {
 }
 
 type Query {
-  armor(id: Int!): Armor!
+  armor(id: String!): Armor!
   armors: [Armor!]!
   character(id: String!): Character!
-  characterInventory(characterId: String!): [InventoryItem!]!
   characters: [Character!]!
+  inventoryItem(id: String!): InventoryItem!
   inventoryItems: [InventoryItem!]!
   item(id: String!): Item!
   items: [Item!]!
@@ -224,26 +224,26 @@ type Query {
   perks: [Perk!]!
   quest(id: String!): Quest!
   quests: [Quest!]!
+  questsByCharacter(characterId: String!): [Quest!]!
+  questsByStatus(status: QuestStatus!): [Quest!]!
   user(id: String!): User!
   users: [User!]!
-  weapon(id: Int!): Weapon!
+  weapon(id: String!): Weapon!
   weapons: [Weapon!]!
 }
 
 type Quest {
-  characterId: String!
   createdAt: DateTime!
   description: String!
-  experience: Int!
-  id: String!
-  rewardCaps: Int!
+  experience: Float!
+  id: ID!
+  rewardCaps: Float!
   status: QuestStatus!
   title: String!
   updatedAt: DateTime!
 }
 
 input QuestCreateInput {
-  characterId: String
   description: String!
   experience: Int!
   rewardCaps: Int!
@@ -252,9 +252,10 @@ input QuestCreateInput {
 }
 
 enum QuestStatus {
-  COMPLETED
-  IN_PROGRESS
-  PENDING
+  Completed
+  Failed
+  InProgress
+  Pending
 }
 
 input UpdateArmorInput {
@@ -309,7 +310,6 @@ input UpdatePerkInput {
 }
 
 input UpdateQuestInput {
-  characterId: String
   description: String
   experience: Int
   id: String!
@@ -319,6 +319,7 @@ input UpdateQuestInput {
 }
 
 input UpdateUserInput {
+  id: String!
   name: String
 }
 
